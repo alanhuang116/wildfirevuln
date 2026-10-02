@@ -1,6 +1,6 @@
 """Build the analysis table from the raw DINS pull.
 
-Admissibility: fire hazard, residential structure category, damage assessed
+Admissibility: fire hazard, residential or commercial/infrastructure category, damage assessed
 (Inaccessible dropped), incident start 2018 or later (the detailed coding era;
 earlier events mostly inspected damaged structures only), coordinates in
 California. Neighbourhood features are computed against every inspected
@@ -20,7 +20,7 @@ sys.path.insert(0, ROOT)
 from wildfirevuln import taxonomy as T  # noqa: E402
 
 RAW = os.path.join(ROOT, "data", "raw", "dins.csv")
-OUT = os.path.join(ROOT, "data", "processed", "dins_residential.csv")
+OUT = os.path.join(ROOT, "data", "processed", "dins_structures.csv")
 QA = os.path.join(ROOT, "reports", "qa_ingestion.csv")
 MIN_YEAR = 2018
 
@@ -69,8 +69,8 @@ def main():
                                   index=g.index))
     raw = raw.join(pd.concat(parts))
 
-    d = raw[raw.STRUCTURECATEGORY.isin(T.RESIDENTIAL)].copy()
-    qa.append(("residential structure category", len(d)))
+    d = raw[raw.STRUCTURECATEGORY.isin(T.RESIDENTIAL | T.COMMERCIAL)].copy()
+    qa.append(("residential, commercial or infrastructure", len(d)))
     d = d[d.DAMAGE.isin(T.DAMAGE)]
     qa.append(("damage assessed (Inaccessible dropped)", len(d)))
 
@@ -82,7 +82,17 @@ def main():
     out["lon"] = d.LONGITUDE
     out["damage"] = d.DAMAGE.map(T.DAMAGE).astype(int)
     out["burnt"] = (out.damage == 4).astype(int)
-    out["struct"] = d.STRUCTURETYPE.map(T.STRUCT).fillna("sfr_1")
+    out["asset"] = np.where(d.STRUCTURECATEGORY.isin(T.RESIDENTIAL), "residential", "commercial")
+    st = d.STRUCTURETYPE.map(T.STRUCT)
+    st = st.where(st.notna(), np.where(out["asset"] == "residential", "sfr_1", "com_1"))
+    # A commercial-category record with a residential type code (or the
+    # reverse) is a data-entry inconsistency; the category wins.
+    res_codes = {"sfr_1", "sfr_2", "mobile", "motorhome", "multi"}
+    st = np.where((out["asset"] == "commercial") & st.isin(res_codes) &
+                  ~d.STRUCTURECATEGORY.eq("Mixed Commercial/Residential"), "com_1", st)
+    st = np.where(d.STRUCTURECATEGORY.eq("Mixed Commercial/Residential"), "mixed", st)
+    st = np.where(d.STRUCTURECATEGORY.eq("Infrastructure"), "infrastructure", st)
+    out["struct"] = st
     for f, (col, mp, _, _) in T.FIELDS.items():
         out[f] = d[col].map(lambda v, mp=mp: T.harmonise(v, mp))
     out["era"] = d.YEARBUILT.map(T.era)

@@ -34,7 +34,7 @@ sys.path.insert(0, ROOT)
 from wildfirevuln import taxonomy as T  # noqa: E402
 from wildfirevuln.model import Design, VulnModel  # noqa: E402
 
-DATA = os.path.join(ROOT, "data", "processed", "dins_residential.csv")
+DATA = os.path.join(ROOT, "data", "processed", "dins_structures.csv")
 OUT_CSV = os.path.join(ROOT, "reports", "credits.csv")
 OUT_JSON = os.path.join(ROOT, "data", "processed", "credits.json")
 B = int(os.environ.get("WFV_BOOT", 100))
@@ -54,6 +54,7 @@ PRIOR = {
 
 def load():
     d = pd.read_csv(DATA)
+    d = d[d.asset == "residential"].copy()   # credits are a homeowner product
     lb = d.local_burnt.clip(0.01, 0.99)
     d["local_logit"] = np.log(lb / (1 - lb))
     return d

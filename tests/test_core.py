@@ -61,6 +61,16 @@ def test_live_update_moves_toward_data():
     assert u > 0 and v < m.tau2
 
 
+def test_commercial_interactions_only_touch_commercial():
+    df = synth()
+    df.loc[df.index[:800], "struct"] = "com_1"
+    d = Design(cats=["struct", "vents"], use_num=False, interact=True).fit(df)
+    assert d.columns[-1] == "com:vents=fine"
+    X = d.transform(df)
+    com = (df.struct == "com_1").to_numpy()
+    assert np.all(X[~com, -1] == 0) and np.allclose(X[com, -1], X[com, d.columns.index("vents=fine")])
+
+
 def test_credit_shrinks_with_severity():
     assert credit(-0.5, 0.3) > credit(-0.5, 0.9) > 0
     assert abs(credit(0.0, 0.4)) < 1e-12

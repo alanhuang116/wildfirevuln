@@ -22,7 +22,7 @@ from wildfirevuln import product, taxonomy as T  # noqa: E402
 from wildfirevuln.model import GH_W, GH_X, Design, VulnModel  # noqa: E402
 from wildfirevuln.validate import draw_impute, gbm_fit_predict  # noqa: E402
 
-DATA = os.path.join(ROOT, "data", "processed", "dins_residential.csv")
+DATA = os.path.join(ROOT, "data", "processed", "dins_structures.csv")
 REP = os.path.join(ROOT, "reports")
 OUT = os.path.join(ROOT, "web", "bundle.json")
 REPLAY = ["Eaton 2025", "Palisades 2025", "Camp 2018", "Caldor 2021",
@@ -48,9 +48,9 @@ def share_with_obs(model, df_rest, y_obs, u, var, z=1.2815516):
 
 
 def live_replay(d, sp, ev):
-    tr, te = d[d.event != ev], d[d.event == ev]
+    tr, te = d[d.event != ev], d[(d.event == ev) & (d.asset == "residential")]
     trp, tep = product.apply(tr, sp), product.apply(te, sp)
-    wf = VulnModel(Design(cats=list(sp))).fit(trp)
+    wf = VulnModel(product.design(sp)).fit(trp)
     seed = zlib.crc32(ev.encode())
     tr_d, te_d = draw_impute(tr, tr, seed), draw_impute(te, tr, seed + 1)
     p_gbm = gbm_fit_predict(product.apply(tr_d, sp), product.apply(te_d, sp), list(sp),
@@ -102,19 +102,20 @@ def main():
     d = pd.read_csv(DATA)
     sp = product.spec()
     dp = product.apply(d, sp)
-    final = VulnModel(Design(cats=list(sp))).fit(dp)
+    final = VulnModel(product.design(sp)).fit(dp)
     mj = final.to_json()
 
-    # Spacing presets from the terciles of homes within 100 m.
-    q = d.n100.quantile([1 / 6, 0.5, 5 / 6]).to_numpy()
-    presets = []
-    for name, lo, hi in [("Scattered", 0, d.n100.quantile(1 / 3)),
-                         ("Suburban", d.n100.quantile(1 / 3), d.n100.quantile(2 / 3)),
-                         ("Dense", d.n100.quantile(2 / 3), 1e9)]:
-        g = d[(d.n100 >= lo) & (d.n100 < hi)]
-        presets.append({"name": name, "n30": float(g.n30.median()),
-                        "n100": float(g.n100.median()), "nn_m": r(g.nn_m.median(), 1),
-                        "burnt": r(g.burnt.mean())})
+    # Spacing presets from the terciles of structures within 100 m, by asset.
+    presets = {}
+    for a, ga in d.groupby("asset"):
+        q1, q2 = ga.n100.quantile(1 / 3), ga.n100.quantile(2 / 3)
+        presets[a] = []
+        for name, lo, hi in [("Scattered", 0, q1), ("Suburban", q1, q2), ("Dense", q2, 1e9)]:
+            g = ga[(ga.n100 >= lo) & (ga.n100 < hi)]
+            presets[a].append({"name": name, "n30": float(g.n30.median()),
+                               "n100": float(g.n100.median()), "nn_m": r(g.nn_m.median(), 1),
+                               "burnt": r(g.burnt.mean())})
+    res = d[d.asset == "residential"]
 
     # Partial damage when not destroyed, by structure class.
     partial = {}
@@ -125,13 +126,16 @@ def main():
                       "bands": [r(sh.get(k, 0)) for k in range(4)]}
 
     # Fires for the "replay a past fire" control, with their fitted effects.
-    ev_n = d.event.value_counts()
+    ev_n = res.event.value_counts()
     replay_effects = [{"event": e, "u": r(final.events[e]), "n": int(ev_n[e]),
-                       "rate": r(d[d.event == e].burnt.mean())} for e in REPLAY]
+                       "rate": r(res[res.event == e].burnt.mean())} for e in REPLAY]
 
     # Parity cases for the JavaScript engine.
     rng = np.random.default_rng(7)
-    cases = dp.iloc[rng.choice(len(dp), 40, replace=False)]
+    com_idx = np.flatnonzero((dp.asset == "commercial").to_numpy())
+    res_idx = np.flatnonzero((dp.asset == "residential").to_numpy())
+    cases = dp.iloc[np.r_[rng.choice(res_idx, 28, replace=False),
+                          rng.choice(com_idx, 12, replace=False)]]
     parity = [{"home": {c: row[c] for c in list(sp) + ["n30", "n100", "nn_m"]},
                "p_prior": r(float(final.predict(cases.iloc[[i]])[0]), 8),
                "eta": r(float(final.linpred(cases.iloc[[i]])[0]), 8)}
@@ -144,6 +148,8 @@ def main():
         credits = json.load(fh)
     with open(os.path.join(REP, "bench_summary.json")) as fh:
         bench = json.load(fh)
+    with open(os.path.join(ROOT, "data", "processed", "commercial.json")) as fh:
+        commercial = json.load(fh)
     per_fire = pd.read_csv(os.path.join(REP, "bench_leave_fire_out.csv"))
     inter = pd.read_csv(os.path.join(REP, "bench_event_interval.csv"))
     live = pd.read_csv(os.path.join(REP, "bench_live_update.csv"))
@@ -153,7 +159,7 @@ def main():
     # The survey paradox: what is recorded on destroyed vs surviving homes.
     paradox = {}
     for f in ["fence", "deck", "eaves", "siding"]:
-        t = pd.crosstab(d[f], d.burnt, normalize="columns")
+        t = pd.crosstab(res[f], res.burnt, normalize="columns")
         paradox[f] = {lv: [r(t.loc[lv, 0]), r(t.loc[lv, 1])] for lv in t.index}
 
     print("live replays ...")
@@ -162,9 +168,10 @@ def main():
 
     bundle = {
         "meta": {"built": pd.Timestamp.now().strftime("%Y-%m-%d"),
-                 "n_homes": int(len(d)), "n_fires": int(d.event.nunique()),
+                 "n_homes": int(len(res)), "n_commercial": int((d.asset == "commercial").sum()),
+                 "n_structures": int(len(d)), "n_fires": int(d.event.nunique()),
                  "years": [int(d.year.min()), int(d.year.max())],
-                 "burnt_share": r(d.burnt.mean()),
+                 "burnt_share": r(res.burnt.mean()),
                  "n_raw": int(qa.records.iloc[0])},
         "model": mj, "spec": sp, "gh": {"x": GH_X.tolist(), "w": GH_W.tolist()},
         "names": T.LEVEL_NAMES, "fields": {f: v[3] for f, v in T.FIELDS.items()},
@@ -179,7 +186,9 @@ def main():
                   "live": [{"k": int(k), "model": m, **{c: r(v) for c, v in row.items()}}
                            for (k, m), row in live_mean.iterrows()]},
         "qa": qa.to_dict("records"), "paradox": paradox,
-        "replays": replays, "cells": cells,
+        "replays": replays, "cells": cells, "commercial": commercial,
+        "cre_map": {k: list(v) for k, v in T.CRE_MAP.items()},
+        "commercial_struct": T.COMMERCIAL_STRUCT,
     }
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(bundle, fh, separators=(",", ":"))

@@ -1,6 +1,8 @@
 """Leave-one-fire-out benchmark.
 
-Each fold withholds one fire entirely and trains on every other fire.
+Each fold withholds one fire entirely and trains on every other fire
+(homes and commercial buildings); this script scores the homes of the
+withheld fire. experiments/run_commercial.py scores commercial buildings.
 Folds: fires with at least 200 inspected homes and at least 20 destroyed and
 20 not destroyed (so ranking metrics are defined).
 
@@ -33,7 +35,7 @@ sys.path.insert(0, ROOT)
 from wildfirevuln import product  # noqa: E402
 from wildfirevuln.validate import run_fold  # noqa: E402
 
-DATA = os.path.join(ROOT, "data", "processed", "dins_residential.csv")
+DATA = os.path.join(ROOT, "data", "processed", "dins_structures.csv")
 REP = os.path.join(ROOT, "reports")
 
 
@@ -41,7 +43,7 @@ def main():
     d = pd.read_csv(DATA)
     sp = product.spec()
     print("product spec:", sp)
-    g = d.groupby("event").burnt.agg(["size", "sum"])
+    g = d[d.asset == "residential"].groupby("event").burnt.agg(["size", "sum"])
     folds = g[(g["size"] >= 200) & (g["sum"] >= 20) & (g["size"] - g["sum"] >= 20)].index
     print("folds:", len(folds))
     res = Parallel(n_jobs=-1, verbose=0)(delayed(run_fold)(d, sp, ev) for ev in folds)

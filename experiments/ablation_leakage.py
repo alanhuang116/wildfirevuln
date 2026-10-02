@@ -4,7 +4,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier as H
 from sklearn.metrics import roc_auc_score
 from wildfirevuln.model import Design, CATS
 from wildfirevuln import taxonomy as T, product
-d=pd.read_csv('data/processed/dins_residential.csv')
+d=pd.read_csv('data/processed/dins_structures.csv')
 rng=np.random.default_rng(0)
 def draw_impute(df, ref):
     df=df.copy()

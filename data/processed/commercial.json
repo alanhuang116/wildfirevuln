@@ -1,0 +1,407 @@
+{
+ "summary": [
+  {
+   "model": "commercial_only",
+   "brier": 0.21249417892589145,
+   "logloss": 0.6142767688830151,
+   "auc": 0.681150237935594,
+   "share_err": 0.17018242543267198
+  },
+  {
+   "model": "home_curve",
+   "brier": 0.2173704238828817,
+   "logloss": 0.6271992419661782,
+   "auc": 0.6427716395524297,
+   "share_err": 0.182825313412801
+  },
+  {
+   "model": "wildfirevuln",
+   "brier": 0.21998430895128296,
+   "logloss": 0.6353486519705946,
+   "auc": 0.6866188920068979,
+   "share_err": 0.17297983179245796
+  },
+  {
+   "model": "joint_shared_slopes",
+   "brier": 0.2203322583949595,
+   "logloss": 0.6360748446475196,
+   "auc": 0.6708193379636689,
+   "share_err": 0.17966667580010814
+  },
+  {
+   "model": "gbm_joint",
+   "brier": 0.22208710738151352,
+   "logloss": 0.6487936728866001,
+   "auc": 0.6361857930340635,
+   "share_err": 0.17396373305381105
+  },
+  {
+   "model": "constant",
+   "brier": 0.2306633978821088,
+   "logloss": 0.6548457822341984,
+   "auc": 0.5,
+   "share_err": 0.19095903630945976
+  }
+ ],
+ "coverage80": 0.8125,
+ "folds": [
+  "Bond 2020",
+  "CZU Lightning Cmplx 2020",
+  "Caldor 2021",
+  "Camp 2018",
+  "Carr 2018",
+  "Creek 2020",
+  "Dixie 2021",
+  "Eaton 2025",
+  "Glass 2020",
+  "Kincade 2019",
+  "LNU Lightning Cmplx 2020",
+  "North Complex 2020",
+  "Palisades 2025",
+  "Park 2024",
+  "TCU Complex 2025",
+  "Woolsey 2018"
+ ],
+ "n_structures": 6218,
+ "intervals": [
+  {
+   "event": "Bond 2020",
+   "n": 38,
+   "rate": 0.1316,
+   "pred": 0.1835,
+   "lo80": 0.0229,
+   "hi80": 0.4414
+  },
+  {
+   "event": "CZU Lightning Cmplx 2020",
+   "n": 353,
+   "rate": 0.5042,
+   "pred": 0.256,
+   "lo80": 0.0371,
+   "hi80": 0.5816
+  },
+  {
+   "event": "Caldor 2021",
+   "n": 191,
+   "rate": 0.1047,
+   "pred": 0.267,
+   "lo80": 0.0537,
+   "hi80": 0.5579
+  },
+  {
+   "event": "Camp 2018",
+   "n": 1132,
+   "rate": 0.4823,
+   "pred": 0.2762,
+   "lo80": 0.0485,
+   "hi80": 0.5971
+  },
+  {
+   "event": "Carr 2018",
+   "n": 50,
+   "rate": 0.44,
+   "pred": 0.1631,
+   "lo80": 0.0169,
+   "hi80": 0.4074
+  },
+  {
+   "event": "Creek 2020",
+   "n": 342,
+   "rate": 0.2339,
+   "pred": 0.2297,
+   "lo80": 0.0293,
+   "hi80": 0.5402
+  },
+  {
+   "event": "Dixie 2021",
+   "n": 330,
+   "rate": 0.4636,
+   "pred": 0.2409,
+   "lo80": 0.0344,
+   "hi80": 0.5486
+  },
+  {
+   "event": "Eaton 2025",
+   "n": 531,
+   "rate": 0.3164,
+   "pred": 0.2974,
+   "lo80": 0.0589,
+   "hi80": 0.6104
+  },
+  {
+   "event": "Glass 2020",
+   "n": 783,
+   "rate": 0.4738,
+   "pred": 0.3271,
+   "lo80": 0.096,
+   "hi80": 0.6046
+  },
+  {
+   "event": "Kincade 2019",
+   "n": 94,
+   "rate": 0.117,
+   "pred": 0.1854,
+   "lo80": 0.0196,
+   "hi80": 0.4616
+  },
+  {
+   "event": "LNU Lightning Cmplx 2020",
+   "n": 204,
+   "rate": 0.1176,
+   "pred": 0.1574,
+   "lo80": 0.0149,
+   "hi80": 0.4003
+  },
+  {
+   "event": "North Complex 2020",
+   "n": 113,
+   "rate": 0.6106,
+   "pred": 0.195,
+   "lo80": 0.0243,
+   "hi80": 0.4636
+  },
+  {
+   "event": "Palisades 2025",
+   "n": 416,
+   "rate": 0.3894,
+   "pred": 0.2494,
+   "lo80": 0.0437,
+   "hi80": 0.5405
+  },
+  {
+   "event": "Park 2024",
+   "n": 80,
+   "rate": 0.1375,
+   "pred": 0.1673,
+   "lo80": 0.017,
+   "hi80": 0.4181
+  },
+  {
+   "event": "TCU Complex 2025",
+   "n": 31,
+   "rate": 0.1613,
+   "pred": 0.2287,
+   "lo80": 0.0285,
+   "hi80": 0.5393
+  },
+  {
+   "event": "Woolsey 2018",
+   "n": 107,
+   "rate": 0.8879,
+   "pred": 0.2191,
+   "lo80": 0.0266,
+   "hi80": 0.5257
+  }
+ ],
+ "live": [
+  {
+   "k": 25,
+   "model": "gbm_recentred_on_homes",
+   "brier": 0.20803,
+   "logloss": 0.63551,
+   "share_err": 0.14267
+  },
+  {
+   "k": 25,
+   "model": "wildfirevuln_from_homes",
+   "brier": 0.19119,
+   "logloss": 0.5771,
+   "share_err": 0.13039
+  },
+  {
+   "k": 25,
+   "model": "wildfirevuln_prior",
+   "brier": 0.21998,
+   "logloss": 0.63535,
+   "share_err": 0.17298
+  },
+  {
+   "k": 50,
+   "model": "gbm_recentred_on_homes",
+   "brier": 0.20651,
+   "logloss": 0.64917,
+   "share_err": 0.13558
+  },
+  {
+   "k": 50,
+   "model": "wildfirevuln_from_homes",
+   "brier": 0.19141,
+   "logloss": 0.58856,
+   "share_err": 0.12309
+  },
+  {
+   "k": 50,
+   "model": "wildfirevuln_prior",
+   "brier": 0.21998,
+   "logloss": 0.63535,
+   "share_err": 0.17298
+  },
+  {
+   "k": 100,
+   "model": "gbm_recentred_on_homes",
+   "brier": 0.21001,
+   "logloss": 0.67547,
+   "share_err": 0.15229
+  },
+  {
+   "k": 100,
+   "model": "wildfirevuln_from_homes",
+   "brier": 0.19504,
+   "logloss": 0.61544,
+   "share_err": 0.14213
+  },
+  {
+   "k": 100,
+   "model": "wildfirevuln_prior",
+   "brier": 0.21998,
+   "logloss": 0.63535,
+   "share_err": 0.17298
+  },
+  {
+   "k": 200,
+   "model": "gbm_recentred_on_homes",
+   "brier": 0.20257,
+   "logloss": 0.63867,
+   "share_err": 0.1313
+  },
+  {
+   "k": 200,
+   "model": "wildfirevuln_from_homes",
+   "brier": 0.18898,
+   "logloss": 0.59569,
+   "share_err": 0.12442
+  },
+  {
+   "k": 200,
+   "model": "wildfirevuln_prior",
+   "brier": 0.22723,
+   "logloss": 0.65278,
+   "share_err": 0.18002
+  }
+ ],
+ "relativities": [
+  {
+   "struct": "sfr_2",
+   "name": "Single-family, multi-storey",
+   "asset": "residential",
+   "odds_ratio": 0.6235,
+   "or_lo90": 0.5385,
+   "or_hi90": 0.6772,
+   "n": 24096,
+   "burnt_share": 0.3307
+  },
+  {
+   "struct": "mobile",
+   "name": "Manufactured / mobile home",
+   "asset": "residential",
+   "odds_ratio": 2.1753,
+   "or_lo90": 1.9934,
+   "or_hi90": 2.4321,
+   "n": 8578,
+   "burnt_share": 0.7281
+  },
+  {
+   "struct": "motorhome",
+   "name": "Motor home / trailer",
+   "asset": "residential",
+   "odds_ratio": 3.2134,
+   "or_lo90": 2.7053,
+   "or_hi90": 4.1075,
+   "n": 1810,
+   "burnt_share": 0.5829
+  },
+  {
+   "struct": "com_1",
+   "name": "Commercial, one storey",
+   "asset": "commercial",
+   "odds_ratio": 0.7048,
+   "or_lo90": 0.3961,
+   "or_hi90": 1.363,
+   "n": 3597,
+   "burnt_share": 0.4062
+  },
+  {
+   "struct": "com_2",
+   "name": "Commercial, multi-storey",
+   "asset": "commercial",
+   "odds_ratio": 0.4754,
+   "or_lo90": 0.294,
+   "or_hi90": 0.7331,
+   "n": 620,
+   "burnt_share": 0.2403
+  },
+  {
+   "struct": "institutional",
+   "name": "School, church, hospital",
+   "asset": "commercial",
+   "odds_ratio": 0.399,
+   "or_lo90": 0.1782,
+   "or_hi90": 0.9729,
+   "n": 708,
+   "burnt_share": 0.2754
+  },
+  {
+   "struct": "mixed",
+   "name": "Mixed commercial / residential",
+   "asset": "commercial",
+   "odds_ratio": 0.8083,
+   "or_lo90": 0.3618,
+   "or_hi90": 1.3488,
+   "n": 410,
+   "burnt_share": 0.278
+  },
+  {
+   "struct": "infrastructure",
+   "name": "Infrastructure, utility",
+   "asset": "commercial",
+   "odds_ratio": 0.2355,
+   "or_lo90": 0.1288,
+   "or_hi90": 0.3985,
+   "n": 883,
+   "burnt_share": 0.1155
+  }
+ ],
+ "feature_check": [
+  {
+   "level": "era=post2008",
+   "beta_residential": -0.6178,
+   "se_residential": 0.0554,
+   "beta_commercial": -1.6865,
+   "se_commercial": 0.2861,
+   "z_difference": -3.6666
+  },
+  {
+   "level": "roof=wood",
+   "beta_residential": 0.9763,
+   "se_residential": 0.0967,
+   "beta_commercial": 1.4352,
+   "se_commercial": 0.2303,
+   "z_difference": 1.8373
+  },
+  {
+   "level": "eaves=enclosed",
+   "beta_residential": -0.4054,
+   "se_residential": 0.0268,
+   "beta_commercial": -0.6593,
+   "se_commercial": 0.1096,
+   "z_difference": -2.2513
+  },
+  {
+   "level": "vents=fine",
+   "beta_residential": -0.3519,
+   "se_residential": 0.0245,
+   "beta_commercial": -0.2117,
+   "se_commercial": 0.1193,
+   "z_difference": 1.1505
+  },
+  {
+   "level": "vents=none",
+   "beta_residential": -0.9247,
+   "se_residential": 0.0284,
+   "beta_commercial": -0.7727,
+   "se_commercial": 0.0911,
+   "z_difference": 1.5934
+  }
+ ],
+ "bootstrap": 60
+}

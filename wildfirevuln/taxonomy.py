@@ -22,8 +22,13 @@ DAMAGE = {
 # California carriers settle >50% fire damage in practice.
 DAMAGE_RATIO = {0: 0.0, 1: 0.05, 2: 0.175, 3: 0.375, 4: 1.0}
 
-RESIDENTIAL = {"Single Residence", "Multiple Residence",
-               "Mixed Commercial/Residential"}
+RESIDENTIAL = {"Single Residence", "Multiple Residence"}
+# Commercial real estate and other fixed assets. DINS splits commercial
+# buildings only by storey count plus a few institutional types; it has no
+# warehouse, industrial, office or retail code.
+COMMERCIAL = {"Nonresidential Commercial", "Mixed Commercial/Residential",
+              "Infrastructure"}
+COMMERCIAL_STRUCT = ["com_1", "com_2", "institutional", "mixed", "infrastructure"]
 
 STRUCT = {
     "Single Family Residence Single Story": "sfr_1",
@@ -36,7 +41,11 @@ STRUCT = {
     "Motor Home/Travel Trailer": "motorhome",
     "Multi Family Residence Single Story": "multi",
     "Multi Family Residence Multi Story": "multi",
-    "Mixed Commercial/Residential": "multi",
+    "Mixed Commercial/Residential": "mixed",
+    "Commercial Building Single Story": "com_1",
+    "Commercial Building Multi Story": "com_2",
+    "School": "institutional", "Church": "institutional", "Hospital": "institutional",
+    "Infrastructure": "infrastructure", "Utility Misc Structure": "infrastructure",
 }
 
 ROOF = {"Tile": "tile", "Concrete": "tile", "Concrete Slab": "tile",
@@ -81,9 +90,25 @@ LEVEL_NAMES = {
     "fence": {"combustible": "Combustible", "noncomb": "Non-combustible", "none": "None"},
     "struct": {"sfr_1": "Single-family, one storey", "sfr_2": "Single-family, multi-storey",
                "mobile": "Manufactured / mobile home", "motorhome": "Motor home / trailer",
-               "multi": "Multi-family / mixed use"},
+               "multi": "Multi-family",
+               "com_1": "Commercial, one storey", "com_2": "Commercial, multi-storey",
+               "institutional": "School, church, hospital", "mixed": "Mixed commercial / residential",
+               "infrastructure": "Infrastructure, utility"},
     "era": {"pre1990": "Before 1990", "1990_2007": "1990–2007",
             "post2008": "2008 or later (Chapter 7A)"},
+}
+
+
+# Bank collateral types mapped to the nearest DINS class. 'proxy' means DINS
+# has no code for the type and the mapping is by construction and footprint.
+CRE_MAP = {
+    "warehouse": ("com_1", "proxy"), "industrial": ("com_1", "proxy"),
+    "logistics": ("com_1", "proxy"), "retail": ("com_1", "proxy"),
+    "office": ("com_2", "proxy"), "hotel": ("com_2", "proxy"),
+    "commercial_1": ("com_1", "direct"), "commercial_2": ("com_2", "direct"),
+    "school": ("institutional", "direct"), "church": ("institutional", "direct"),
+    "hospital": ("institutional", "direct"), "mixed_use": ("mixed", "direct"),
+    "multifamily": ("multi", "direct"), "utility": ("infrastructure", "direct"),
 }
 
 

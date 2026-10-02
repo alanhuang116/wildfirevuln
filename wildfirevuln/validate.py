@@ -61,8 +61,9 @@ def metrics(y, p):
             "share_err": float(abs(p.mean() - y.mean()))}
 
 
-def run_fold(d, sp, ev):
-    tr, te = d[d.event != ev], d[d.event == ev]
+def run_fold(d, sp, ev, test_asset="residential"):
+    """Train on every asset of every other fire; score one asset class of fire ev."""
+    tr, te = d[d.event != ev], d[(d.event == ev) & (d.asset == test_asset)]
     y_tr, y_te = tr.burnt.to_numpy(float), te.burnt.to_numpy(float)
     preds = {"constant": np.full(len(te), y_tr.mean())}
 
@@ -83,7 +84,7 @@ def run_fold(d, sp, ev):
     trp, tep = product.apply(tr, sp), product.apply(te, sp)
     p_gbm = gbm_fit_predict(product.apply(tr_d, sp), product.apply(te_d, sp), list(sp), y_tr)
     preds["gbm_graded"] = p_gbm
-    wf = VulnModel(Design(cats=list(sp), use_num=True)).fit(trp)
+    wf = VulnModel(product.design(sp)).fit(trp)
     p_wf = wf.predict(tep)
     preds["wildfirevuln"] = p_wf
 

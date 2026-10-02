@@ -133,7 +133,7 @@ select{font:500 14px var(--f-disp); color:var(--ink); background:var(--panel); b
 /* two-column blocks */
 .cols{display:grid; gap:40px}
 @media(min-width:960px){ .cols{grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:56px} .cols.even{grid-template-columns:1fr 1fr} .cols.wide-left{grid-template-columns:minmax(0,7fr) minmax(0,5fr)} }
-.fig{display:grid; gap:10px}
+.fig{display:grid; gap:10px; align-content:start}
 .fig-cap{font-size:13.5px; color:var(--ink-3); line-height:1.45; max-width:70ch}
 .fig-title{font-family:var(--f-disp); font-size:19px; font-weight:600}
 svg text{font-family:var(--f-mono); fill:var(--ink-2)}
@@ -219,13 +219,14 @@ footer .wrap{display:grid; gap:10px}
 <body>
 <nav class="nav" aria-label="Sections">
   <div class="wrap">
-    <a class="brand" href="#top">WildfireVuln <span>v1 · CA residential</span></a>
+    <a class="brand" href="#top">WildfireVuln <span>v1.1 · CA residential + commercial</span></a>
     <a class="nl" href="#survey">The survey problem</a>
     <a class="nl" href="#credits">Credits</a>
     <a class="nl" href="#pricing">Pricing</a>
     <a class="nl" href="#live">Live fire</a>
+    <a class="nl" href="#commercial">Commercial</a>
     <a class="nl" href="#evidence">Validation</a>
-    <a class="nl" href="#portfolio">Portfolio</a>
+    <a class="nl" href="#portfolio">Loan book</a>
     <button class="tbtn" id="theme" type="button" aria-label="Switch colour theme">Dark</button>
   </div>
 </nav>
@@ -233,11 +234,11 @@ footer .wrap{display:grid; gap:10px}
 <header class="hero" id="top">
   <div class="wrap hero-grid">
     <div>
-      <p class="kicker">Wildfire vulnerability for property insurers</p>
+      <p class="kicker">Wildfire vulnerability for insurers and lenders</p>
       <h1 style="margin-top:14px">When the fire reaches the street, <em>which houses are still standing?</em></h1>
-      <p class="sub">WildfireVuln estimates the chance a home is destroyed once fire reaches its neighbourhood, and how much each retrofit changes that. It is calibrated on <span data-k="n_homes"></span> homes that CAL FIRE inspected after <span data-k="n_fires"></span> fires between <span data-k="y0"></span> and <span data-k="y1"></span>. It gives a mitigation credit only where the inspection evidence holds up.</p>
+      <p class="sub">WildfireVuln estimates the chance a home is destroyed once fire reaches its neighbourhood, and how much each retrofit changes that. It is calibrated on <span data-k="n_homes"></span> homes and <span data-k="n_commercial"></span> commercial and infrastructure buildings that CAL FIRE inspected after <span data-k="n_fires"></span> fires between <span data-k="y0"></span> and <span data-k="y1"></span>. It gives a mitigation credit only where the inspection evidence holds up.</p>
       <div class="facts">
-        <div><b data-k="n_homes"></b><span>homes inspected after a fire, damaged or not</span></div>
+        <div><b data-k="n_structures"></b><span>homes and commercial buildings inspected after a fire, damaged or not</span></div>
         <div><b data-k="n_folds"></b><span>fires withheld one at a time to test the model</span></div>
         <div><b data-k="cov"></b><span>withheld fires whose destroyed share fell inside our 80% range</span></div>
         <div><b data-k="n_supported"></b><span>mitigation credits the evidence supports, out of <span data-k="n_levels"></span> features tested</span></div>
@@ -292,7 +293,7 @@ footer .wrap{display:grid; gap:10px}
         <p>After a fire, CAL FIRE inspectors walk every street inside the perimeter and record each structure: damage category, roof, eaves, vents, siding, decks and fences. It is the best open record of wildfire losses anywhere. It is also recorded after the fact.</p>
         <p>A wooden fence attached to a house that burned is gone, so the form says <b>no fence</b>. Stucco walls stand in the ash, so the form says <b>stucco</b>. Eaves on a burnt house cannot be seen, so the form says <b>unknown</b>. A model trained on these records learns how the survey was filled in.</p>
         <p class="quote">A model fitted naively to the survey concludes that an attached wooden fence lowers the chance of losing the house by <span data-k="fence_or"></span>.</p>
-        <p>We checked every feature three ways and only give credit where the answers agree. We also stopped the model from reading the word "unknown". A gradient-boosted model that is allowed to use it scores an AUC of <b data-k="auc_leaky"></b> on withheld fires. Once "unknown" cannot be told apart from a real value, the same model scores <b data-k="auc_survey"></b>. Restricted to features that are recorded the same way before and after a fire, it scores <b data-k="auc_graded"></b>, level with ours.</p>
+        <p>We checked every feature three ways and only give credit where the answers agree. We also stopped the model from reading the word "unknown". A gradient-boosted model that is allowed to use it scores an AUC of <b data-k="auc_leaky"></b> on withheld fires. Once "unknown" cannot be told apart from a real value, the same model scores <b data-k="auc_survey"></b>. Restricted to features that are recorded the same way before and after a fire, it scores <b data-k="auc_graded"></b>; ours scores <b data-k="auc_wfv"></b>.</p>
       </div>
       <div class="fig">
         <div class="fig-title">What the form says on homes that burned and homes that survived</div>
@@ -385,13 +386,48 @@ footer .wrap{display:grid; gap:10px}
       <div class="fig">
         <div id="map" role="img" aria-label="Map of destroyed share by 250 metre cell"></div>
         <div class="legend" id="maplegend"></div>
-        <p class="fig-cap">Destroyed share of inspected homes in 250 m cells. Cells with fewer than 5 homes are left out, so no single house can be located. Basemap © Esri and OpenStreetMap contributors.</p>
+        <p class="fig-cap">Destroyed share of inspected structures, homes and commercial, in 250 m cells. Cells with fewer than 5 structures are left out, so no single building can be located. Basemap © Esri and OpenStreetMap contributors.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="evidence">
+<section id="commercial">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">Commercial real estate and fixed assets</p>
+      <h2>Commercial collateral on the same fire record</h2>
+      <p class="prose">Inspectors record every structure in the footprint, not only homes. The record holds <span data-k="n_commercial"></span> commercial, institutional and infrastructure buildings from the same fires as the homes. WildfireVuln fits them in one model: commercial buildings get their own building-feature effects, and homes and commercial buildings share each fire's severity. That shared severity is what lets the first home inspections update the estimate for a lender's commercial collateral.</p>
+    </div>
+    <div class="cols">
+      <div class="fig">
+        <div class="fig-title">Bank collateral types and the class they are scored as</div>
+        <div class="scroll-x"><table class="tbl" id="cremap"></table></div>
+        <p class="fig-cap">The inspection form splits commercial buildings by storey count, plus schools, churches, hospitals, mixed use and infrastructure. It has no warehouse, industrial, office or retail code, so those types are scored as the nearest class and marked as proxies. Contents, stock, machinery and business interruption are not in the record. Ports, refineries and large plants are not represented.</p>
+      </div>
+      <div class="fig">
+        <div class="fig-title">Odds of destruction compared with a one-storey single-family home</div>
+        <div id="relchart"></div>
+        <p class="fig-cap">Same fire, same recorded features and spacing. Lines are 90% ranges from resampling whole fires. One-storey commercial buildings are close to houses; multi-storey, institutional and infrastructure buildings are destroyed far less often.</p>
+      </div>
+    </div>
+    <div class="cols even" style="margin-top:52px">
+      <div class="fig">
+        <div class="fig-title">Commercial buildings in withheld fires</div>
+        <div class="scroll-x"><table class="tbl" id="ctable"></table></div>
+        <p class="fig-cap" id="ccap"></p>
+      </div>
+      <div class="fig">
+        <div class="fig-title">Home inspections update commercial estimates</div>
+        <div class="scroll-x"><table class="tbl" id="ctransfer"></table></div>
+        <p class="fig-cap">Brier score on the commercial buildings of each withheld fire after the first k home inspections, mean over fires. A model fitted to commercial records alone cannot use home inspections, so its score does not move.</p>
+        <div class="prose" id="cwin" style="margin-top:20px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="evidence" class="alt">
   <div class="wrap">
     <div class="sh">
       <p class="kicker">Validation</p>
@@ -410,24 +446,24 @@ footer .wrap{display:grid; gap:10px}
         <div class="scroll-x"><table class="tbl" id="ltable"></table></div>
         <p class="fig-cap">Brier score on the homes not yet inspected, mean over withheld fires. Boosting gets the same early inspections and has its average re-centred on them. WildfireVuln's update is Bayesian: with few inspections it leans on what it knows about fires in general, so it does not over-react.</p>
         <div class="prose" style="margin-top:20px">
-          <p><b>Where we win.</b> Against every model that can be used for pricing, WildfireVuln has the lowest fire-share error and log loss, the best update once inspections arrive, and the only calibrated range for a fire's total. It ranks homes as well as gradient boosting on the same features.</p>
-          <p><b>Where we do not.</b> Gradient boosting on the same features has a slightly lower Brier score before the fire. Models that read the outcome-dependent survey fields rank homes better against the survey; we explain above why that is not usable.</p>
+          <p><b>Where we win.</b> Against every model that can be used for pricing, WildfireVuln has the lowest fire-share error and log loss, the best update once inspections arrive, and the only calibrated range for a fire's total. It ranks homes about as well as gradient boosting on the same features (AUC <span data-k="auc_wfv"></span> against <span data-k="auc_graded3"></span>).</p>
+          <p><b>Where we do not.</b> Gradient boosting on the same features has a slightly lower Brier score before the fire and a slightly higher AUC. Models that read the outcome-dependent survey fields rank homes better against the survey; we explain above why that is not usable.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="portfolio" class="alt">
+<section id="portfolio">
   <div class="wrap">
     <div class="sh">
-      <p class="kicker">Score a book of homes</p>
-      <h2>Portfolio desk</h2>
-      <p class="prose">Paste or upload a CSV and every row is scored in your browser; nothing is sent anywhere. Homes in one fire share its severity, so the range for the number destroyed is wider than independent scoring suggests. The rows loaded below are examples.</p>
+      <p class="kicker">Score a loan book or a schedule of locations</p>
+      <h2>Loan book desk</h2>
+      <p class="prose">Paste or upload a CSV of collateral, residential and commercial together, and every row is scored in your browser; nothing is sent anywhere. Buildings in one fire share its severity, so the range for the book is wider than scoring each loan on its own suggests. Losses are to the building, before any property insurance recovery. The rows loaded below are examples.</p>
     </div>
     <div class="cols">
       <div class="plan">
-        <label class="label" for="csv">Columns: id, struct, year_built, roof, eaves, vents, n30, n100, nn_m</label>
+        <label class="label" for="csv">Columns: id, asset_type, year_built, roof, eaves, vents, n30, n100, nn_m, building_value, land_value, loan_balance</label>
         <textarea id="csv" spellcheck="false"></textarea>
         <div class="playrow">
           <button class="btn" id="score" type="button">Score homes</button>
@@ -436,32 +472,34 @@ footer .wrap{display:grid; gap:10px}
           <a class="btn line" id="dl" href="#" hidden>Download results</a>
         </div>
         <p class="err" id="csverr" hidden></p>
-        <p class="foot-note">Codes: struct sfr_1, sfr_2, mobile, motorhome, multi · roof asphalt, tile, metal, wood · eaves open, enclosed, none · vents coarse, fine, open, none · anything else or blank is unknown. n30 and n100 are structures within 30 m and 100 m; nn_m is metres to the nearest structure. Blank spacing uses the suburban median.</p>
+        <p class="foot-note">asset_type: sfr_1, sfr_2, mobile, motorhome, multifamily, or a commercial type: warehouse, industrial, logistics, retail, office, hotel, commercial_1, commercial_2, school, church, hospital, mixed_use, utility. Roof asphalt, tile, metal, wood · eaves open, enclosed, none · vents coarse, fine, open, none · anything else or blank is unknown. n30 and n100 are structures within 30 m and 100 m; nn_m is metres to the nearest structure; blank spacing uses the suburban median for the asset class. A severe fire is the 90th percentile of the fires in the record.</p>
       </div>
       <div class="plan">
         <div class="ledger">
-          <div><span class="label">Homes scored</span><b id="pf-n">–</b></div>
-          <div><span class="label">Expected destroyed</span><b id="pf-e">–</b><span class="foot-note">if one fire reaches all of them</span></div>
-          <div><span class="label">80% range</span><b id="pf-r">–</b><span class="foot-note">fire severity shared</span></div>
+          <div><span class="label">Building value</span><b id="pf-n">–</b><span class="foot-note" id="pf-nsub"></span></div>
+          <div><span class="label">Expected loss</span><b id="pf-e">–</b><span class="foot-note" id="pf-r">if one fire reaches all of them</span></div>
+          <div><span class="label">Severe fire</span><b id="pf-s">–</b><span class="foot-note" id="pf-ssub"></span></div>
         </div>
+        <div class="scroll-x"><table class="tbl" id="pfsplit"></table></div>
         <div class="scroll-x"><table class="tbl" id="pftable"></table></div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="method">
+<section id="method" class="alt">
   <div class="wrap">
     <div class="sh">
       <p class="kicker">Method and limits</p>
       <h2>What the model is, and what it is not</h2>
     </div>
     <div class="lim">
-      <div><b>Data</b><p>CAL FIRE Damage Inspection (DINS) records, <span data-k="n_raw"></span> structures pulled from the public feature service. Kept: residential structures from fires starting <span data-k="y0"></span> or later with an assessed damage category, <span data-k="n_homes"></span> homes in all. Earlier fires use a coarser form and mostly record damaged homes only. Street addresses are dropped at download.</p></div>
+      <div><b>Data</b><p>CAL FIRE Damage Inspection (DINS) records, <span data-k="n_raw"></span> structures pulled from the public feature service. Kept: residential, commercial and infrastructure structures from fires starting <span data-k="y0"></span> or later with an assessed damage category: <span data-k="n_homes"></span> homes and <span data-k="n_commercial"></span> commercial and infrastructure buildings. Sheds, barns and garages are left out. Earlier fires use a coarser form and mostly record damaged homes only. Street addresses are dropped at download.</p></div>
       <div><b>Model</b><p>Logistic regression for P(destroyed) with structure type, year built, roof, eaves and vents in their graded form, spacing to neighbouring structures, and a partially pooled effect for each fire (spread τ = <span data-k="tau"></span> on the logit scale). For a new fire the prediction is averaged over that effect. Unknown fields take the average contribution of the known values, so "unknown" never carries information.</p></div>
       <div><b>Damage ratio</b><p>Destroyed counts as a total loss. Homes that survive are assigned the observed mix of DINS categories for their structure type, at 5%, 17.5% and 37.5% for affected, minor and major. Smoke, ash and contents losses are not in the inspection record and are not modelled.</p></div>
       <div><b>What it conditions on</b><p>Every inspected home was inside or near a fire perimeter. The model answers "if fire reaches this neighbourhood", and needs a hazard model for the chance that it does.</p></div>
       <div><b>Credits are associations</b><p>Comparing neighbours in the same fire removes most differences in exposure, but not all. Homes built after 2008 also differ in ways the form does not record. Credits for fences, decks and patio covers cannot be estimated from post-fire surveys at all; they need inspections made before the fire.</p></div>
+      <div><b>Commercial assets</b><p>DINS records commercial buildings by storey count, plus schools, churches, hospitals, mixed use and infrastructure. It has no warehouse, industrial, office or retail code, so those collateral types are mapped to the nearest class and marked as proxies. Contents, stock, machinery and business interruption are not in the record. Ports and large industrial plants are not represented.</p></div>
       <div><b>Geography</b><p>California only. Other states and countries have different building stock, codes and fire behaviour, and no comparable open inspection record.</p></div>
       <div><b>Not compared</b><p>Commercial catastrophe models are licensed and were not available to test. Every comparison here is against a model built and scored on the same data, and the code is public.</p></div>
     </div>
@@ -519,6 +557,12 @@ function eta(h0){
   for(const c of D.cats){ for(const v of D.levels[c]){ const x = h[c]==='unknown' ? D.freq[c][v] : (h[c]===v?1:0); e += x*M.beta[j++]; } }
   const t=numTerms(h);
   for(const k of D.num){ e += ((t[k]-D.mean[k])/D.sd[k])*M.beta[j++]; }
+  if(D.interact){
+    const x=[]; for(const c of D.cats){ for(const v of D.levels[c]){ x.push(h[c]==='unknown' ? D.freq[c][v] : (h[c]===v?1:0)); } }
+    for(const k of D.num) x.push((t[k]-D.mean[k])/D.sd[k]);
+    const com = D.com_struct.includes(h.struct);
+    for(const i of D.feat_idx){ if(com) e += x[i]*M.beta[j]; j++; }
+  }
   return e;
 }
 function pInt(e, um=0, v=M.tau2){
@@ -537,8 +581,10 @@ const nSup = cr.filter(r=>r.grade==='supported').length;
 const nCov = Math.round(B.bench.coverage80*B.bench.n_folds);
 const fenceRow = cr.find(r=>r.level==='fence=none');
 const K = {
-  n_homes: B.meta.n_homes.toLocaleString('en-US'), n_fires: B.meta.n_fires, y0: B.meta.years[0], y1: B.meta.years[1],
+  n_homes: B.meta.n_homes.toLocaleString('en-US'), n_commercial: B.meta.n_commercial.toLocaleString('en-US'),
+  n_structures: B.meta.n_structures.toLocaleString('en-US'), n_fires: B.meta.n_fires, y0: B.meta.years[0], y1: B.meta.years[1],
   n_folds: B.bench.n_folds, cov: nCov + ' of ' + B.bench.n_folds, n_supported: nSup, n_levels: cr.length,
+  auc_wfv: summ.wildfirevuln.auc.toFixed(3), auc_graded3: summ.gbm_graded.auc.toFixed(3),
   auc_leaky: summ.gbm_leaky.auc.toFixed(2), auc_survey: summ.gbm_survey.auc.toFixed(2), auc_graded: summ.gbm_graded.auc.toFixed(2),
   fence_or: Math.round((1-1/fenceRow.odds_ratio)*100) + '% in odds compared with having no fence',
   cov_txt: nCov + ' of ' + B.bench.n_folds + ' fires fell inside the range, against 80% expected.',
@@ -553,8 +599,12 @@ function hideTip(){ tip.hidden=true; }
 
 /* ---------- inspection card ---------- */
 const gradeOf = Object.fromEntries(cr.map(r=>[r.level, r.grade]));
+const RES_TYPES=['sfr_1','sfr_2','mobile','motorhome','multi'];
+const COM_TYPES=B.commercial_struct;
+const REL=Object.fromEntries(B.commercial.relativities.map(r=>[r.struct,r]));
 const FIELDS = [
-  {k:'struct', label:'Structure type', opts:['sfr_1','sfr_2','mobile','motorhome','multi']},
+  {k:'asset', label:'Asset class', opts:['residential','commercial']},
+  {k:'struct', label:'Structure type', opts:()=>state.asset==='residential'?RES_TYPES:COM_TYPES},
   {k:'era', label:'Year built (parcel roll)', opts:['pre1990','1990_2007','post2008','unknown']},
   {k:'roof', label:'Roof construction', opts:['asphalt','tile','metal','wood','unknown']},
   {k:'eaves', label:'Eaves', opts:['open','enclosed','none','unknown']},
@@ -563,9 +613,9 @@ const FIELDS = [
 ];
 const fireOpts = [{id:'new', label:'A new fire, severity unknown'},{id:'mild', label:'A mild fire (10th percentile)'},{id:'severe', label:'A severe fire (90th percentile)'}]
   .concat(B.replay_effects.map(r=>({id:'ev:'+r.event, label:'Replay: '+r.event, u:r.u})));
-const state = {struct:'sfr_1', era:'pre1990', roof:'asphalt', eaves:'open', vents:'coarse', spacing:'Suburban', fire:'new'};
-function optName(k, v){ if(v==='unknown') return 'Unknown'; if(k==='spacing'){ const p=B.presets.find(x=>x.name===v); return v; } return (B.names[k]||{})[v] || v; }
-function isPriced(k, v){ if(k==='spacing'||v==='unknown') return true; if(v===D.ref[k]) return true; return (B.spec[k]||[]).includes(v); }
+const state = {asset:'residential', struct:'sfr_1', era:'pre1990', roof:'asphalt', eaves:'open', vents:'coarse', spacing:'Suburban', fire:'new'};
+function optName(k, v){ if(v==='unknown') return 'Unknown'; if(k==='asset') return v==='residential'?'Residential':'Commercial / fixed asset'; if(k==='spacing') return v; return (B.names[k]||{})[v] || v; }
+function isPriced(k, v){ if(k==='spacing'||k==='asset'||v==='unknown') return true; if(v===D.ref[k]) return true; return (B.spec[k]||[]).includes(v); }
 function buildForm(){
   const f=$('#form'); f.innerHTML='';
   for(const fd of FIELDS){
@@ -573,11 +623,14 @@ function buildForm(){
     const top=document.createElement('div'); top.className='fld-top';
     top.innerHTML=`<span class="label" id="lab-${fd.k}">${fd.label}</span><span class="note" id="note-${fd.k}"></span>`;
     const seg=document.createElement('div'); seg.className='seg'; seg.setAttribute('role','group'); seg.setAttribute('aria-labelledby','lab-'+fd.k);
-    for(const v of fd.opts){
+    const opts = typeof fd.opts==='function' ? fd.opts() : fd.opts;
+    for(const v of opts){
       const b=document.createElement('button'); b.type='button'; b.id=`opt-${fd.k}-${v}`; b.textContent=optName(fd.k,v);
       if(!isPriced(fd.k,v)) b.classList.add('flag');
       b.setAttribute('aria-pressed', state[fd.k]===v);
-      b.onclick=()=>{ state[fd.k]=v; seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b)); updateAll(); };
+      b.onclick=()=>{ state[fd.k]=v;
+        if(fd.k==='asset'){ state.struct = v==='residential'?'sfr_1':'com_1'; buildForm(); $('#firesel').value=state.fire; updateAll(); return; }
+        seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b)); updateAll(); };
       seg.appendChild(b);
     }
     w.append(top, seg); f.appendChild(w);
@@ -590,7 +643,7 @@ function buildForm(){
   w.appendChild(s); f.appendChild(w);
 }
 function homeFrom(st){
-  const p=B.presets.find(x=>x.name===st.spacing);
+  const p=B.presets[st.asset].find(x=>x.name===st.spacing);
   return {struct:st.struct, era:st.era, roof:st.roof, eaves:st.eaves, vents:st.vents, n30:p.n30, n100:p.n100, nn_m:p.nn_m};
 }
 function scenario(fire){
@@ -613,7 +666,9 @@ function updateCard(){
   for(const fd of FIELDS){
     const n=$('#note-'+fd.k); const v=state[fd.k];
     n.className='note';
-    if(fd.k==='spacing'){ const pr=B.presets.find(x=>x.name===v); n.textContent=`${pr.n100} within 100 m · nearest ${Math.round(pr.nn_m)} m`; continue; }
+    if(fd.k==='asset'){ n.textContent = v==='commercial' ? 'occupancy class, see Commercial section' : ''; continue; }
+    if(fd.k==='spacing'){ const pr=B.presets[state.asset].find(x=>x.name===v); n.textContent=`${pr.n100} within 100 m · nearest ${Math.round(pr.nn_m)} m`; continue; }
+    if(fd.k==='struct' && v!=='sfr_1' && REL[v]){ const r=REL[v]; n.textContent=`odds ×${r.odds_ratio.toFixed(2)} vs single-family home`; continue; }
     if(!isPriced(fd.k,v)){ const g=gradeOf[fd.k+'='+v]; n.textContent=`priced as ${optName(fd.k,D.ref[fd.k]).toLowerCase()}: evidence ${g}`; n.className='note warn'; }
     else if(v!=='unknown' && v!==D.ref[fd.k]){ const r=cr.find(x=>x.level===fd.k+'='+v); if(r){ const c=-r.credit_p30; n.textContent=(c<0?'credit ':'surcharge +')+Math.abs(c*100).toFixed(0)+'% at 30% baseline'; } }
     else n.textContent='';
@@ -882,49 +937,124 @@ function buildIntervals(){
   $('#intchart').innerHTML=''; $('#intchart').appendChild(svg);
 }
 
+/* ---------- commercial ---------- */
+const CRE_NAMES={warehouse:'Warehouse', industrial:'Industrial', logistics:'Logistics / distribution', retail:'Retail', office:'Office', hotel:'Hotel',
+  commercial_1:'Other commercial, one storey', commercial_2:'Other commercial, multi-storey', school:'School', church:'Church', hospital:'Hospital',
+  mixed_use:'Mixed use', multifamily:'Multifamily', utility:'Utility, infrastructure'};
+const NICE_C={wildfirevuln:'WildfireVuln', commercial_only:'Same model, commercial records only', joint_shared_slopes:'Joint, shared feature effects',
+  home_curve:'Home curve applied to commercial', gbm_joint:'Boosting, all assets', constant:'Constant commercial rate'};
+function buildCommercial(){
+  let m='<thead><tr><th>Collateral type</th><th>Scored as</th><th>Mapping</th></tr></thead><tbody>';
+  for(const [k,[cls,st]] of Object.entries(B.cre_map)) m+=`<tr><td>${CRE_NAMES[k]||k}</td><td>${optName('struct',cls)}</td><td><span class="chip ${st==='proxy'?'contested':'supported'}">${st}</span></td></tr>`;
+  $('#cremap').innerHTML=m+'</tbody>';
+  const C=B.commercial, cs=Object.fromEntries(C.summary.map(r=>[r.model,r]));
+  const order=['wildfirevuln','commercial_only','joint_shared_slopes','home_curve','gbm_joint','constant'];
+  const cols=[['brier','Brier',4,'min'],['logloss','Log loss',4,'min'],['auc','AUC',3,'max'],['share_err','Fire-share error',3,'min']];
+  const best={}; for(const [k,,,dir] of cols){ const v=order.map(x=>cs[x][k]); best[k]=dir==='min'?Math.min(...v):Math.max(...v); }
+  let t='<thead><tr><th>Model</th>'+cols.map(c=>`<th class="n">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+  for(const x of order){ t+=`<tr class="${x==='wildfirevuln'?'ours':''}"><td>${NICE_C[x]}</td>`+cols.map(([k,,d])=>{ const v=cs[x][k].toFixed(d); return `<td class="n">${Math.abs(cs[x][k]-best[k])<1e-12?'<b>'+v+'</b>':v}</td>`; }).join('')+'</tr>'; }
+  $('#ctable').innerHTML=t+'</tbody>';
+  const ncov=Math.round(C.coverage80*C.folds.length);
+  $('#ccap').textContent=`${C.folds.length} withheld fires with at least 30 commercial buildings, 5 destroyed and 5 not; ${C.intervals.reduce((s,r)=>s+r.n,0).toLocaleString('en-US')} buildings. Every model is trained on the other fires. WildfireVuln's 80% range for the commercial destroyed share covered ${ncov} of ${C.folds.length} fires.`;
+  const L=C.live, get=(k,x)=>L.find(r=>r.k===k&&r.model===x);
+  let tr='<thead><tr><th class="n">Homes inspected</th><th class="n">WildfireVuln</th><th class="n">Boosting</th><th class="n">Commercial only</th></tr></thead><tbody>';
+  for(const k of [25,50,100,200]){ const a=get(k,'wildfirevuln_from_homes'), b=get(k,'gbm_recentred_on_homes'); if(!a) continue;
+    const c=cs.commercial_only.brier; const mn=Math.min(a.brier,b.brier,c); const f=v=>v===mn?'<b>'+v.toFixed(4)+'</b>':v.toFixed(4);
+    tr+=`<tr><td class="n">${k}</td><td class="n">${f(a.brier)}</td><td class="n">${f(b.brier)}</td><td class="n">${f(c)}</td></tr>`; }
+  $('#ctransfer').innerHTML=tr+'</tbody>';
+  const a25=get(25,'wildfirevuln_from_homes'), b25=get(25,'gbm_recentred_on_homes');
+  $('#cwin').innerHTML=`<p><b>Where we win.</b> WildfireVuln ranks commercial buildings within a fire better than any other model (AUC ${cs.wildfirevuln.auc.toFixed(3)}). After 25 home inspections its Brier score on commercial buildings is ${a25.brier.toFixed(3)}, against ${b25.brier.toFixed(3)} for re-centred boosting and ${cs.commercial_only.brier.toFixed(3)} for a commercial-only model.</p>
+    <p><b>Where we do not.</b> Before any inspections, the model fitted to commercial records alone is better calibrated (Brier ${cs.commercial_only.brier.toFixed(3)} against ${cs.wildfirevuln.brier.toFixed(3)}). With ${C.folds.length} test fires, commercial calibration is the main open item.</p>`;
+}
+function buildRel(){
+  const rows=B.commercial.relativities;
+  const W=580,rowH=28,pl=250,pr=60,pt=10,H=rows.length*rowH+pt+34;
+  const lo=Math.log(0.1), hi=Math.log(5); const x=v=>pl+(Math.log(v)-lo)/(hi-lo)*(W-pl-pr);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',role:'img','aria-label':'Odds ratio of destruction by structure class'});
+  for(const t of [0.1,0.25,0.5,1,2,5]){ el('line',{x1:x(t),x2:x(t),y1:pt,y2:H-26,stroke:t===1?css('--ink-2'):css('--rule'),'stroke-width':t===1?1.2:1},svg); const tx=el('text',{x:x(t),y:H-10,'text-anchor':'middle','font-size':11},svg); tx.textContent='×'+t; }
+  rows.forEach((r,i)=>{ const cy=pt+i*rowH+rowH/2, com=r.asset==='commercial', col=com?css('--accent'):css('--muted-mark');
+    const g=el('g',{},svg);
+    const t=el('text',{x:pl-10,y:cy+4,'text-anchor':'end','font-size':12},g); t.textContent=r.name; if(com) t.setAttribute('style','fill:'+css('--ink'));
+    el('line',{x1:x(r.or_lo90),x2:x(Math.min(r.or_hi90,5)),y1:cy,y2:cy,stroke:col,'stroke-width':2,'stroke-linecap':'round'},g);
+    el('circle',{cx:x(r.odds_ratio),cy,r:5,fill:col,stroke:css('--ground'),'stroke-width':2},g);
+    const v=el('text',{x:W-pr+8,y:cy+4,'font-size':11.5},g); v.textContent='×'+r.odds_ratio.toFixed(2);
+    el('rect',{x:0,y:cy-rowH/2,width:W,height:rowH,fill:'transparent'},g);
+    g.addEventListener('mousemove',ev=>showTip(ev,`<b>${r.name}</b><br>odds ×${r.odds_ratio.toFixed(2)} (90%: ${r.or_lo90.toFixed(2)}–${r.or_hi90.toFixed(2)})<br>${r.n.toLocaleString('en-US')} inspected, ${pct(r.burnt_share)} destroyed`)); g.addEventListener('mouseleave',hideTip);
+  });
+  $('#relchart').innerHTML=''; $('#relchart').appendChild(svg);
+}
+
 /* ---------- portfolio ---------- */
-const SAMPLE=`id,struct,year_built,roof,eaves,vents,n30,n100,nn_m
-EX-001,sfr_1,1964,asphalt,open,coarse,1,14,22
-EX-002,sfr_2,2012,tile,enclosed,fine,2,30,15
-EX-003,mobile,1988,metal,none,unknown,4,40,8
-EX-004,sfr_1,1979,wood,open,open,0,3,48
-EX-005,sfr_1,1995,asphalt,enclosed,fine,1,9,30
-EX-006,multi,2001,tile,enclosed,none,3,36,12
-EX-007,sfr_2,1958,asphalt,unknown,coarse,2,22,18
-EX-008,sfr_1,2016,asphalt,enclosed,fine,0,6,40
-EX-009,motorhome,,metal,none,none,1,8,20
-EX-010,sfr_1,1972,asphalt,open,coarse,3,41,10
-EX-011,sfr_2,1990,tile,open,fine,1,18,21
-EX-012,sfr_1,1949,wood,unknown,unknown,0,2,70`;
-const VALID={struct:['sfr_1','sfr_2','mobile','motorhome','multi'],roof:['asphalt','tile','metal','wood'],eaves:['open','enclosed','none'],vents:['coarse','fine','open','none']};
+const SAMPLE=`id,asset_type,year_built,roof,eaves,vents,n30,n100,nn_m,building_value,land_value,loan_balance
+EX-R01,sfr_1,1964,asphalt,open,coarse,1,14,22,520000,380000,610000
+EX-R02,sfr_2,2012,tile,enclosed,fine,2,30,15,880000,700000,1100000
+EX-R03,mobile,1988,metal,none,unknown,4,40,8,140000,90000,150000
+EX-R04,sfr_1,1979,wood,open,open,0,3,48,610000,250000,640000
+EX-R05,multifamily,1985,asphalt,open,coarse,3,38,10,2400000,900000,2300000
+EX-C01,warehouse,1998,metal,none,none,1,6,35,6800000,2100000,5200000
+EX-C02,retail,1975,asphalt,open,coarse,2,24,12,3100000,1400000,3300000
+EX-C03,office,2009,asphalt,enclosed,fine,1,15,20,9500000,3000000,7400000
+EX-C04,industrial,1968,metal,unknown,unknown,0,4,55,4200000,800000,3900000
+EX-C05,hotel,1991,tile,enclosed,fine,2,20,14,12000000,4000000,10500000
+EX-C06,mixed_use,1955,asphalt,open,coarse,4,45,7,2600000,1100000,2900000
+EX-C07,utility,2003,metal,none,none,0,2,80,1800000,300000,1200000`;
+const VALID={roof:['asphalt','tile','metal','wood'],eaves:['open','enclosed','none'],vents:['coarse','fine','open','none']};
+function classOf(t){
+  if(RES_TYPES.includes(t)) return {struct:t, status:'direct'};
+  const m=B.cre_map[t]; return m?{struct:m[0], status:m[1]}:null;
+}
+const fmtM = x => Math.abs(x)>=1e6 ? '$'+(x/1e6).toFixed(x>=1e7?1:2)+'m' : '$'+Math.round(x/1e3).toLocaleString('en-US')+'k';
 function eraOf(y){ const v=parseInt(y,10); if(!v||v<1800) return 'unknown'; return v<1990?'pre1990':v<2008?'1990_2007':'post2008'; }
 let lastCsv='';
 function scorePortfolio(){
   const err=$('#csverr'); err.hidden=true;
   const lines=$('#csv').value.trim().split(/\r?\n/).filter(l=>l.trim());
-  if(lines.length<2){ err.textContent='Add a header row and at least one home.'; err.hidden=false; return; }
+  if(lines.length<2){ err.textContent='Add a header row and at least one loan.'; err.hidden=false; return; }
   const hdr=lines[0].split(',').map(s=>s.trim().toLowerCase());
-  const need=['struct','roof','eaves','vents']; const miss=need.filter(n=>!hdr.includes(n));
-  if(miss.length){ err.textContent='Missing column: '+miss.join(', ')+'. The header must include struct, roof, eaves and vents.'; err.hidden=false; return; }
-  const sub=B.presets.find(p=>p.name==='Suburban');
-  const out=[]; let sumP=0, etas=[];
+  const miss=['asset_type','building_value'].filter(n=>!hdr.includes(n));
+  if(miss.length){ err.textContent='Missing column: '+miss.join(', ')+'. The header must include asset_type and building_value.'; err.hidden=false; return; }
+  const out=[], bad=[], etas=[];
   for(const line of lines.slice(1)){
     const c=line.split(','), row={}; hdr.forEach((h,i)=>row[h]=(c[i]||'').trim());
+    const cl=classOf((row.asset_type||'').toLowerCase());
+    if(!cl){ bad.push(row.id||row.asset_type||'(blank)'); continue; }
+    const asset=RES_TYPES.includes(cl.struct)?'residential':'commercial';
+    const sub=B.presets[asset].find(p=>p.name==='Suburban');
     const num=(v,d)=>{ const x=parseFloat(v); return isFinite(x)&&x>=0?x:d; };
-    const h={struct:VALID.struct.includes(row.struct)?row.struct:'sfr_1', era:eraOf(row.year_built),
+    const h={struct:cl.struct, era:eraOf(row.year_built),
       roof:VALID.roof.includes(row.roof)?row.roof:'unknown', eaves:VALID.eaves.includes(row.eaves)?row.eaves:'unknown', vents:VALID.vents.includes(row.vents)?row.vents:'unknown',
       n30:num(row.n30,sub.n30), n100:num(row.n100,sub.n100), nn_m:num(row.nn_m,sub.nn_m)};
-    const e=eta(h), p=pInt(e); etas.push(e); sumP+=p;
-    const best=RETRO.filter(r=>r.ok(h)).map(r=>({l:r.label, c:1-edr(pInt(eta(r.apply(h))),h.struct)/edr(p,h.struct)})).sort((a,b)=>b.c-a.c)[0];
-    out.push({id:row.id||'', p, lo:sig(e-Z80*TAU), hi:sig(e+Z80*TAU), d:edr(p,h.struct), best});
+    const e=eta(h), p=pInt(e), pS=sig(e+Z80*TAU);
+    const bv=num(row.building_value,0), lv=num(row.land_value,0), bal=num(row.loan_balance,0);
+    const lossE=bv*edr(p,h.struct), lossS=bv*edr(pS,h.struct);
+    etas.push({e, bv, struct:h.struct});
+    out.push({id:row.id||'', type:row.asset_type, cls:cl.struct, status:cl.status, asset, p, pS, bv, bal, lossE, lossS,
+              ltv0: bal>0 ? bal/Math.max(lv+bv,1) : null, ltvS: bal>0 ? bal/Math.max(lv+bv-lossS,1) : null});
   }
-  const lo=etas.reduce((s,e)=>s+sig(e-Z80*TAU),0), hi=etas.reduce((s,e)=>s+sig(e+Z80*TAU),0);
-  $('#pf-n').textContent=out.length; $('#pf-e').textContent=sumP.toFixed(1); $('#pf-r').textContent=lo.toFixed(1)+' – '+hi.toFixed(1);
-  let t='<thead><tr><th>ID</th><th class="n">Chance destroyed</th><th class="n">Mild – severe</th><th class="n">Damage ratio</th><th>Largest credit available</th></tr></thead><tbody>';
-  for(const r of out) t+=`<tr><td class="mono" style="font-size:13px">${r.id}</td><td class="n">${pct(r.p)}</td><td class="n">${pct(r.lo)} – ${pct(r.hi)}</td><td class="n">${pct(r.d,1)}</td><td style="font-size:14px">${r.best?r.best.l+' <span class="mono" style="color:var(--protect)">−'+(r.best.c*100).toFixed(0)+'%</span>':'<span style="color:var(--ink-3)">none applicable</span>'}</td></tr>`;
+  if(bad.length){ err.textContent='Skipped, asset_type not recognised: '+bad.join(', ')+'. The accepted codes are listed below the box.'; err.hidden=false; }
+  if(!out.length) return;
+  const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+  const lo=sum(etas,x=>x.bv*edr(sig(x.e-Z80*TAU),x.struct)), hi=sum(etas,x=>x.bv*edr(sig(x.e+Z80*TAU),x.struct));
+  const tot=sum(out,r=>r.bv), le=sum(out,r=>r.lossE), ls=sum(out,r=>r.lossS);
+  const under=out.filter(r=>r.ltvS!=null && r.ltvS>1).length;
+  $('#pf-n').textContent=fmtM(tot); $('#pf-nsub').textContent=out.length+' loans';
+  $('#pf-e').textContent=fmtM(le); $('#pf-r').textContent='if one fire reaches all of them; 80% range '+fmtM(lo)+' – '+fmtM(hi);
+  $('#pf-s').textContent=fmtM(ls); $('#pf-ssub').textContent=under+' of '+out.length+' loans above 100% LTV after a severe fire';
+  let sp='<thead><tr><th>Book</th><th class="n">Loans</th><th class="n">Building value</th><th class="n">Expected loss</th><th class="n">Severe fire</th><th class="n">Severe loss ratio</th></tr></thead><tbody>';
+  for(const a of ['residential','commercial']){
+    const g=out.filter(r=>r.asset===a); if(!g.length) continue;
+    const v=sum(g,r=>r.bv), s2=sum(g,r=>r.lossS);
+    sp+=`<tr><td>${a==='residential'?'Residential':'Commercial and fixed assets'}</td><td class="n">${g.length}</td><td class="n">${fmtM(v)}</td><td class="n">${fmtM(sum(g,r=>r.lossE))}</td><td class="n">${fmtM(s2)}</td><td class="n">${pct(s2/Math.max(v,1))}</td></tr>`;
+  }
+  $('#pfsplit').innerHTML=sp+'</tbody>';
+  let t='<thead><tr><th>ID</th><th>DINS class</th><th class="n">Chance destroyed</th><th class="n">Expected loss</th><th class="n">Severe fire</th><th class="n">LTV now → severe</th></tr></thead><tbody>';
+  for(const r of out){
+    const ltv = r.ltv0==null ? '–' : pct(r.ltv0)+' → '+(r.ltvS>1 ? '<b style="color:var(--accent-ink)">'+pct(r.ltvS)+'</b>' : pct(r.ltvS));
+    t+=`<tr><td class="mono" style="font-size:13px">${r.id}</td><td style="font-size:14px">${optName('struct',r.cls)}${r.status==='proxy'?' <span class="chip contested" title="DINS has no code for '+r.type+'; mapped by construction and footprint">proxy</span>':''}</td><td class="n">${pct(r.p)}</td><td class="n">${fmtM(r.lossE)}</td><td class="n">${fmtM(r.lossS)}</td><td class="n">${ltv}</td></tr>`;
+  }
   $('#pftable').innerHTML=t+'</tbody>';
-  lastCsv='id,p_destroyed,p_mild,p_severe,expected_damage_ratio,largest_credit,credit_pct\n'+out.map(r=>[r.id,r.p.toFixed(4),r.lo.toFixed(4),r.hi.toFixed(4),r.d.toFixed(4),r.best?'"'+r.best.l+'"':'',r.best?(r.best.c*100).toFixed(1):''].join(',')).join('\n');
-  const dl=$('#dl'); dl.hidden=false; dl.href=URL.createObjectURL(new Blob([lastCsv],{type:'text/csv'})); dl.download='wildfirevuln_scores.csv';
+  lastCsv='id,asset_type,dins_class,mapping,p_destroyed,p_destroyed_severe,expected_loss,severe_loss,ltv_now,ltv_after_severe\n'+out.map(r=>[r.id,r.type,r.cls,r.status,r.p.toFixed(4),r.pS.toFixed(4),Math.round(r.lossE),Math.round(r.lossS),r.ltv0==null?'':r.ltv0.toFixed(3),r.ltvS==null?'':r.ltvS.toFixed(3)].join(',')).join('\n');
+  const dl=$('#dl'); dl.hidden=false; dl.href=URL.createObjectURL(new Blob([lastCsv],{type:'text/csv'})); dl.download='wildfirevuln_loan_book.csv';
 }
 
 /* ---------- theme ---------- */
@@ -935,9 +1065,9 @@ try{ const t=localStorage.getItem('wfv-theme'); if(t) document.documentElement.d
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>redraw());
 
 function updateAll(){ updateCard(); buildRetro(); updatePlanner(); }
-function redraw(){ $('#theme').textContent=isDark()?'Light':'Dark'; buildParadox(); buildLeak(); buildForest(); updatePlanner(); drawLive(); buildIntervals(); drawMap(); }
+function redraw(){ $('#theme').textContent=isDark()?'Light':'Dark'; buildParadox(); buildLeak(); buildRel(); buildForest(); updatePlanner(); drawLive(); buildIntervals(); drawMap(); }
 
-buildForm(); buildLive(); buildBench();
+buildForm(); buildLive(); buildBench(); buildCommercial();
 $('#p0').oninput=buildForest;
 $('#covA').oninput=updatePlanner; $('#preach').oninput=updatePlanner;
 $('#csv').value=SAMPLE; $('#score').onclick=scorePortfolio;

@@ -46,8 +46,12 @@ def numeric(df):
 class Design:
     """Column layout plus the statistics needed to rebuild it in JavaScript."""
 
-    def __init__(self, cats=CATS, use_num=True, extra=(), unknown="impute"):
+    def __init__(self, cats=CATS, use_num=True, extra=(), unknown="impute", interact=False):
         self.cats = list(cats)
+        # interact: building-feature and spacing columns get a second copy
+        # that is non-zero only for commercial structures, so commercial
+        # buildings have their own feature effects while sharing fire effects.
+        self.interact = interact
         self.use_num = use_num
         self.extra = list(extra)        # already-numeric columns, standardised
         self.unknown = unknown          # "impute" (product) or "indicator" (analysis)
@@ -75,6 +79,10 @@ class Design:
         if self.use_num:
             self.columns += NUM
         self.columns += self.extra
+        self.base = list(self.columns)
+        if self.interact:
+            self.feat_idx = [i for i, c in enumerate(self.base) if not c.startswith("struct=")]
+            self.columns += ["com:" + self.base[i] for i in self.feat_idx]
         return self
 
     def transform(self, df):
@@ -93,12 +101,18 @@ class Design:
                 cols.append((num[k] - self.mean[k]) / self.sd[k])
         for k in self.extra:
             cols.append((df[k].to_numpy(float) - self.mean[k]) / self.sd[k])
-        return np.column_stack(cols) if cols else np.zeros((len(df), 0))
+        X = np.column_stack(cols) if cols else np.zeros((len(df), 0))
+        if self.interact:
+            com = df["struct"].isin(T.COMMERCIAL_STRUCT).to_numpy(float)
+            X = np.column_stack([X, X[:, self.feat_idx] * com[:, None]])
+        return X
 
     def to_json(self):
         return {"cats": self.cats, "levels": self.levels, "freq": self.freq,
                 "ref": {c: REF[c] for c in self.cats}, "num": NUM if self.use_num else [],
-                "mean": self.mean, "sd": self.sd, "columns": self.columns}
+                "mean": self.mean, "sd": self.sd, "columns": self.columns,
+                "interact": self.interact, "com_struct": T.COMMERCIAL_STRUCT,
+                "feat_idx": getattr(self, "feat_idx", [])}
 
 
 def _nll(theta, X, y, ev, n_ev, tau2, ridge):
