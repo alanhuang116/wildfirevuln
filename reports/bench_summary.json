@@ -1,0 +1,130 @@
+{
+ "summary": [
+  {
+   "model": "gbm_leaky",
+   "brier": 0.14494858609862116,
+   "logloss": 0.46611260137429916,
+   "auc": 0.86483679512005,
+   "share_err": 0.12177934679480643,
+   "brier_weighted": 0.18680081791670522,
+   "fires_won_brier": 27
+  },
+  {
+   "model": "gbm_survey",
+   "brier": 0.21953271622576373,
+   "logloss": 0.6374657452049194,
+   "auc": 0.6883284867998898,
+   "share_err": 0.16743183062228756,
+   "brier_weighted": 0.26244377815026293,
+   "fires_won_brier": 0
+  },
+  {
+   "model": "survey_glm",
+   "brier": 0.22156865878476734,
+   "logloss": 0.6355281763347833,
+   "auc": 0.6949386680968148,
+   "share_err": 0.19261888552380174,
+   "brier_weighted": 0.24492874054908562,
+   "fires_won_brier": 0
+  },
+  {
+   "model": "gbm_graded",
+   "brier": 0.22912727834539307,
+   "logloss": 0.655918127068516,
+   "auc": 0.6311715440010379,
+   "share_err": 0.17085843633058173,
+   "brier_weighted": 0.2650353380426174,
+   "fires_won_brier": 0
+  },
+  {
+   "model": "wildfirevuln",
+   "brier": 0.23104942411875776,
+   "logloss": 0.6539947073442165,
+   "auc": 0.6308362297978919,
+   "share_err": 0.15989504204056418,
+   "brier_weighted": 0.267207544605069,
+   "fires_won_brier": 2
+  },
+  {
+   "model": "checklist",
+   "brier": 0.23653590003568206,
+   "logloss": 0.6664347700324431,
+   "auc": 0.611757698716821,
+   "share_err": 0.2031005570037179,
+   "brier_weighted": 0.2592289085367402,
+   "fires_won_brier": 0
+  },
+  {
+   "model": "struct_only",
+   "brier": 0.24198297692783557,
+   "logloss": 0.677316504708119,
+   "auc": 0.5953637237168247,
+   "share_err": 0.21155091953762326,
+   "brier_weighted": 0.25167065209316153,
+   "fires_won_brier": 2
+  },
+  {
+   "model": "constant",
+   "brier": 0.2506550216553076,
+   "logloss": 0.6945355677456142,
+   "auc": 0.5,
+   "share_err": 0.2197041502302969,
+   "brier_weighted": 0.2686926786519623,
+   "fires_won_brier": 0
+  }
+ ],
+ "interval_coverage80": 0.8387096774193549,
+ "folds": [
+  "Airport 2024",
+  "BEU Lightning Cmplx 2020",
+  "Beckwourth 2021",
+  "Borel 2024",
+  "Bridge 2024",
+  "CZU Lightning Cmplx 2020",
+  "Caldor 2021",
+  "Camp 2018",
+  "Carr 2018",
+  "Creek 2020",
+  "Dixie 2021",
+  "Eaton 2025",
+  "Fawn 2021",
+  "Glass 2020",
+  "Kincade 2019",
+  "LNU Lightning Cmplx 2020",
+  "McKinney 2022",
+  "Mill 2022",
+  "Mosquito 2022",
+  "Mountain 2024",
+  "North Complex 2020",
+  "Oak 2022",
+  "Palisades 2025",
+  "Park 2024",
+  "River 2021",
+  "SCU Lightning Cmplx 2020",
+  "SQF Complex 2020",
+  "Slater 2020",
+  "Valley 2020",
+  "Woolsey 2018",
+  "Zogg 2020"
+ ],
+ "spec": {
+  "struct": [
+   "mobile",
+   "motorhome",
+   "sfr_2"
+  ],
+  "era": [
+   "post2008"
+  ],
+  "roof": [
+   "wood"
+  ],
+  "eaves": [
+   "enclosed"
+  ],
+  "vents": [
+   "fine",
+   "none"
+  ]
+ }
+}

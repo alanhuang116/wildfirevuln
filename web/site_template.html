@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WildfireVuln</title>
+<meta name="description" content="Wildfire vulnerability and mitigation credits for property insurers, calibrated on 78,091 homes inspected by CAL FIRE after 346 fires.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  color-scheme: light;
+  --ground:#F1F2F0; --panel:#FFFFFF; --panel-2:#E5E8E5; --sunk:#EAECE9;
+  --ink:#16191B; --ink-2:#464C51; --ink-3:#757C82; --rule:#D1D6D3; --rule-2:#B4BBB8;
+  --accent:#B3245A; --accent-ink:#9C1E4E; --accent-wash:rgba(179,36,90,.09);
+  --protect:#2C6B4B; --protect-wash:rgba(44,107,75,.11);
+  --muted-mark:#9AA1A6; --gbm:#4F6C8C;
+  --d0:#4B955B; --d1:#DDAE12; --d2:#DD7621; --d3:#C2352E; --d4:#1E2124;
+  --s1:#F6E3A1; --s2:#EFB15B; --s3:#D9652A; --s4:#A3301F; --s5:#3A1A14;
+  --shadow:0 1px 0 rgba(22,25,27,.04), 0 18px 40px -22px rgba(22,25,27,.35);
+  --f-disp:"Barlow Semi Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#121517; --panel:#1A1E21; --panel-2:#20252A; --sunk:#171B1E;
+    --ink:#E7E9E7; --ink-2:#B2B8BB; --ink-3:#848B90; --rule:#2B3136; --rule-2:#3C444A;
+    --accent:#E2588C; --accent-ink:#F07EA8; --accent-wash:rgba(226,88,140,.14);
+    --protect:#5DB487; --protect-wash:rgba(93,180,135,.14);
+    --muted-mark:#6E767C; --gbm:#83A3C6;
+    --d0:#5DAE6D; --d1:#E6BC2A; --d2:#E98A3A; --d3:#DE5148; --d4:#05070A;
+    --s1:#5A4A1E; --s2:#8C5A22; --s3:#C2612B; --s4:#E58E52; --s5:#F8D9A8;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 18px 40px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#121517; --panel:#1A1E21; --panel-2:#20252A; --sunk:#171B1E;
+  --ink:#E7E9E7; --ink-2:#B2B8BB; --ink-3:#848B90; --rule:#2B3136; --rule-2:#3C444A;
+  --accent:#E2588C; --accent-ink:#F07EA8; --accent-wash:rgba(226,88,140,.14);
+  --protect:#5DB487; --protect-wash:rgba(93,180,135,.14);
+  --muted-mark:#6E767C; --gbm:#83A3C6;
+  --d0:#5DAE6D; --d1:#E6BC2A; --d2:#E98A3A; --d3:#DE5148; --d4:#05070A;
+  --s1:#5A4A1E; --s2:#8C5A22; --s3:#C2612B; --s4:#E58E52; --s5:#F8D9A8;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 18px 40px -22px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:72px}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important; animation:none!important} }
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--f-body); font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--f-disp); font-weight:600; line-height:1.05; letter-spacing:-.005em; margin:0; text-wrap:balance}
+p{margin:0}
+a{color:var(--accent-ink); text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+table{border-collapse:collapse; width:100%}
+.wrap{max-width:1180px; margin:0 auto; padding-inline:clamp(16px,3.5vw,32px)}
+.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+.label{font-family:var(--f-mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+.prose{max-width:64ch; color:var(--ink-2)}
+div.prose{display:grid; gap:14px}
+.prose b{color:var(--ink); font-weight:600}
+.scroll-x{overflow-x:auto}
+
+/* nav */
+.nav{position:sticky; top:env(safe-area-inset-top,0px); z-index:1000; background:color-mix(in srgb,var(--ground) 92%,transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--rule)}
+.nav .wrap{display:flex; align-items:center; gap:22px; height:58px}
+.brand{font-family:var(--f-disp); font-weight:700; font-size:21px; letter-spacing:.01em; text-decoration:none; color:var(--ink); margin-right:auto; display:flex; align-items:baseline; gap:8px}
+.brand span{font-family:var(--f-mono); font-size:10.5px; font-weight:400; color:var(--ink-3); letter-spacing:.06em}
+.nav a.nl{font-family:var(--f-disp); font-weight:500; font-size:15px; color:var(--ink-2); text-decoration:none; display:none}
+.nav a.nl:hover{color:var(--accent-ink)}
+@media(min-width:980px){ .nav a.nl{display:inline} }
+.tbtn{font:500 12px var(--f-mono); color:var(--ink-2); background:transparent; border:1px solid var(--rule-2); border-radius:2px; padding:6px 9px; cursor:pointer}
+.tbtn:hover{border-color:var(--ink-2); color:var(--ink)}
+
+/* sections */
+section{padding-block:clamp(64px,8vw,104px); border-top:1px solid var(--rule)}
+section.alt{background:var(--sunk)}
+.sh{display:grid; gap:14px; margin-bottom:38px; max-width:760px}
+.sh h2{font-size:clamp(30px,4.2vw,46px)}
+.kicker{font-family:var(--f-mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-ink)}
+
+/* hero */
+.hero{padding-block:clamp(40px,6vw,72px) clamp(56px,7vw,88px); border-top:0}
+.hero-grid{display:grid; gap:40px}
+@media(min-width:1020px){ .hero-grid{grid-template-columns:minmax(0,1fr) minmax(0,560px); gap:56px; align-items:start} }
+.hero h1{font-size:clamp(40px,6.4vw,74px); font-weight:700; line-height:.98; letter-spacing:-.01em}
+.hero h1 em{font-style:normal; color:var(--accent)}
+.hero .sub{margin-top:22px; font-size:clamp(17.5px,1.6vw,20px); color:var(--ink-2); max-width:52ch}
+.facts{margin-top:34px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 28px; border-top:1px solid var(--rule); padding-top:22px; max-width:560px}
+.facts div{display:grid; gap:2px}
+.facts b{font-family:var(--f-disp); font-size:30px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums}
+.facts span{font-size:14px; color:var(--ink-3); line-height:1.4}
+.hero-links{margin-top:28px; display:flex; gap:12px; flex-wrap:wrap}
+.btn{font:600 15px var(--f-disp); letter-spacing:.02em; padding:10px 18px; border-radius:2px; border:1px solid var(--accent); background:var(--accent); color:#fff; text-decoration:none; cursor:pointer; display:inline-block}
+.btn:hover{background:var(--accent-ink); border-color:var(--accent-ink)}
+.btn.line{background:transparent; color:var(--ink); border-color:var(--rule-2)}
+.btn.line:hover{border-color:var(--ink)}
+
+/* inspection card */
+.card{background:var(--panel); border:1px solid var(--rule-2); box-shadow:var(--shadow); border-radius:3px}
+.card-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:12px 18px; border-bottom:1px solid var(--rule); background:var(--panel-2)}
+.card-head h3{font-size:17px; font-weight:600; letter-spacing:.02em}
+.form{padding:6px 18px 4px}
+.fld{display:grid; gap:6px; padding:11px 0; border-bottom:1px dashed var(--rule)}
+.fld:last-child{border-bottom:0}
+.fld-top{display:flex; justify-content:space-between; gap:10px; align-items:baseline}
+.note{font-family:var(--f-mono); font-size:10.5px; color:var(--ink-3); text-align:right}
+.note.warn{color:var(--accent-ink)}
+.seg{display:flex; flex-wrap:wrap; gap:5px}
+.seg button{font:500 14px var(--f-disp); color:var(--ink-2); background:transparent; border:1px solid var(--rule-2); border-radius:2px; padding:5px 9px; cursor:pointer; line-height:1.2}
+.seg button:hover{border-color:var(--ink-2); color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--panel)}
+.seg button.flag::after{content:"*"; color:var(--accent); margin-left:2px}
+.seg button[aria-pressed="true"].flag::after{color:var(--panel)}
+select{font:500 14px var(--f-disp); color:var(--ink); background:var(--panel); border:1px solid var(--rule-2); border-radius:2px; padding:6px 8px; max-width:100%}
+.result{border-top:1px solid var(--rule-2); padding:16px 18px 18px; display:grid; gap:14px; background:var(--panel)}
+.res-row{display:flex; gap:22px; align-items:flex-end; flex-wrap:wrap}
+.big{font-family:var(--f-disp); font-size:64px; font-weight:700; line-height:.85; font-variant-numeric:tabular-nums; letter-spacing:-.01em}
+.big small{font-size:28px; font-weight:600}
+.res-meta{display:grid; gap:4px; font-size:14.5px; color:var(--ink-2); padding-bottom:4px}
+.res-meta b{color:var(--ink); font-family:var(--f-mono); font-weight:500; font-size:13.5px}
+.bandbar{display:flex; height:18px; gap:2px}
+.bandbar i{display:block; height:100%; min-width:0}
+.legend{display:flex; flex-wrap:wrap; gap:6px 14px; font-family:var(--f-mono); font-size:11px; color:var(--ink-2)}
+.legend span{display:inline-flex; align-items:center; gap:6px}
+.legend i{width:10px; height:10px; display:inline-block; border-radius:1px}
+.foot-note{font-size:13px; color:var(--ink-3); line-height:1.45}
+
+/* two-column blocks */
+.cols{display:grid; gap:40px}
+@media(min-width:960px){ .cols{grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:56px} .cols.even{grid-template-columns:1fr 1fr} .cols.wide-left{grid-template-columns:minmax(0,7fr) minmax(0,5fr)} }
+.fig{display:grid; gap:10px}
+.fig-cap{font-size:13.5px; color:var(--ink-3); line-height:1.45; max-width:70ch}
+.fig-title{font-family:var(--f-disp); font-size:19px; font-weight:600}
+svg text{font-family:var(--f-mono); fill:var(--ink-2)}
+.tip{position:fixed; z-index:2000; pointer-events:none; background:var(--ink); color:var(--ground); font:12px/1.45 var(--f-mono); padding:7px 9px; border-radius:2px; max-width:280px; box-shadow:var(--shadow)}
+
+/* paradox */
+.pdx{display:grid; gap:14px}
+.pdx-row{display:grid; grid-template-columns:150px 1fr; gap:12px; align-items:center}
+@media(max-width:520px){ .pdx-row{grid-template-columns:1fr} }
+.pdx-bars{display:grid; gap:4px}
+.pbar{display:flex; align-items:center; gap:8px; font-family:var(--f-mono); font-size:12px; color:var(--ink-2)}
+.pbar i{display:block; height:14px; border-radius:0 2px 2px 0}
+.quote{border-left:3px solid var(--accent); padding:4px 0 4px 16px; font-size:19px; color:var(--ink); max-width:46ch}
+
+/* credits */
+.ctrl{display:flex; flex-wrap:wrap; gap:14px 24px; align-items:center; margin-bottom:18px}
+.ctrl label{display:flex; align-items:center; gap:10px; font-size:14.5px; color:var(--ink-2)}
+input[type=range]{accent-color:var(--accent); width:200px; max-width:100%}
+.chip{font:500 11px var(--f-mono); letter-spacing:.05em; text-transform:uppercase; padding:2px 6px; border-radius:2px; border:1px solid currentColor; white-space:nowrap}
+.chip.supported{color:var(--protect)}
+.chip.contested{color:var(--ink-3)}
+.chip.consumed{color:var(--accent-ink)}
+.detail{background:var(--panel); border:1px solid var(--rule); border-radius:3px; padding:18px; display:grid; gap:10px; align-content:start}
+.detail h4{font-size:22px}
+.dl{display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-size:14.5px}
+.dl dt{color:var(--ink-3)} .dl dd{margin:0; font-family:var(--f-mono); font-size:13.5px}
+
+/* tables */
+.tbl{font-size:14.5px}
+.tbl th{font:500 11px var(--f-mono); letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); text-align:left; padding:8px 10px; border-bottom:1px solid var(--rule-2); white-space:nowrap}
+.tbl td{padding:8px 10px; border-bottom:1px solid var(--rule); vertical-align:top}
+.tbl td.n, .tbl th.n{text-align:right; font-family:var(--f-mono); font-variant-numeric:tabular-nums; font-size:13.5px}
+.tbl tr.grp td{font:600 14px var(--f-disp); letter-spacing:.03em; color:var(--ink); background:var(--panel-2); border-bottom:1px solid var(--rule-2)}
+.tbl tr.ours td{background:var(--accent-wash)}
+.tbl tr.leak td{color:var(--ink-3)}
+.tbl td b{font-weight:600; color:var(--ink)}
+
+/* planner */
+.plan{display:grid; gap:16px}
+.inp{display:grid; gap:6px}
+.inp input[type=number]{font:500 16px var(--f-mono); color:var(--ink); background:var(--panel); border:1px solid var(--rule-2); border-radius:2px; padding:7px 9px; width:100%; max-width:240px}
+.chk{display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px dashed var(--rule); font-size:15.5px}
+.chk input{margin-top:5px; accent-color:var(--protect)}
+.chk small{display:block; color:var(--ink-3); font-size:13.5px}
+.chk.off{color:var(--ink-3)}
+.ledger{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border:1px solid var(--rule-2); border-radius:3px; background:var(--panel)}
+@media(max-width:560px){ .ledger{grid-template-columns:1fr} }
+.ledger div{padding:14px 16px; display:grid; gap:4px; border-right:1px solid var(--rule)}
+.ledger div:last-child{border-right:0}
+.ledger b{font-family:var(--f-disp); font-size:30px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1}
+.ledger b.good{color:var(--protect)}
+
+/* live */
+.live-grid{display:grid; gap:28px}
+@media(min-width:1000px){ .live-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr)} }
+#map{height:400px; border:1px solid var(--rule-2); border-radius:3px; background:var(--panel-2)}
+.leaflet-container{font-family:var(--f-mono)}
+.readout{font-size:15px; color:var(--ink-2); display:grid; gap:4px; min-height:72px}
+.readout b{color:var(--ink); font-family:var(--f-mono); font-weight:500}
+.playrow{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.playrow input[type=range]{flex:1; min-width:160px; width:auto}
+
+/* portfolio */
+textarea{width:100%; min-height:190px; font:12.5px/1.5 var(--f-mono); color:var(--ink); background:var(--panel); border:1px solid var(--rule-2); border-radius:2px; padding:10px; resize:vertical}
+.err{color:var(--accent-ink); font-size:14px}
+
+/* method */
+.lim{display:grid; gap:0; border-top:1px solid var(--rule-2)}
+.lim div{display:grid; gap:4px; padding:14px 0; border-bottom:1px solid var(--rule)}
+@media(min-width:760px){ .lim div{grid-template-columns:240px 1fr; gap:24px} }
+.lim b{font-family:var(--f-disp); font-size:17px; font-weight:600}
+.lim p{color:var(--ink-2); font-size:15.5px}
+.steps{display:grid; gap:18px; counter-reset:s}
+@media(min-width:860px){ .steps{grid-template-columns:repeat(3,1fr)} }
+.steps li{list-style:none; border-top:2px solid var(--ink); padding-top:12px; display:grid; gap:6px}
+.steps li::before{counter-increment:s; content:"Step " counter(s); font:500 11px var(--f-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
+.steps b{font-family:var(--f-disp); font-size:20px; font-weight:600}
+.steps p{font-size:15.5px; color:var(--ink-2)}
+footer{border-top:1px solid var(--rule); padding-block:36px 48px; font-size:13.5px; color:var(--ink-3)}
+footer .wrap{display:grid; gap:10px}
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Sections">
+  <div class="wrap">
+    <a class="brand" href="#top">WildfireVuln <span>v1 · CA residential</span></a>
+    <a class="nl" href="#survey">The survey problem</a>
+    <a class="nl" href="#credits">Credits</a>
+    <a class="nl" href="#pricing">Pricing</a>
+    <a class="nl" href="#live">Live fire</a>
+    <a class="nl" href="#evidence">Validation</a>
+    <a class="nl" href="#portfolio">Portfolio</a>
+    <button class="tbtn" id="theme" type="button" aria-label="Switch colour theme">Dark</button>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">Wildfire vulnerability for property insurers</p>
+      <h1 style="margin-top:14px">When the fire reaches the street, <em>which houses are still standing?</em></h1>
+      <p class="sub">WildfireVuln estimates the chance a home is destroyed once fire reaches its neighbourhood, and how much each retrofit changes that. It is calibrated on <span data-k="n_homes"></span> homes that CAL FIRE inspected after <span data-k="n_fires"></span> fires between <span data-k="y0"></span> and <span data-k="y1"></span>. It gives a mitigation credit only where the inspection evidence holds up.</p>
+      <div class="facts">
+        <div><b data-k="n_homes"></b><span>homes inspected after a fire, damaged or not</span></div>
+        <div><b data-k="n_folds"></b><span>fires withheld one at a time to test the model</span></div>
+        <div><b data-k="cov"></b><span>withheld fires whose destroyed share fell inside our 80% range</span></div>
+        <div><b data-k="n_supported"></b><span>mitigation credits the evidence supports, out of <span data-k="n_levels"></span> features tested</span></div>
+      </div>
+      <div class="hero-links">
+        <a class="btn" href="#credits">See the credit schedule</a>
+        <a class="btn line" href="#evidence">How we tested it</a>
+      </div>
+    </div>
+
+    <div class="card" id="inspect" aria-labelledby="card-title">
+      <div class="card-head">
+        <h3 id="card-title">Structure inspection</h3>
+        <span class="label">Fields as on the CAL FIRE DINS form</span>
+      </div>
+      <div class="form" id="form"></div>
+      <div class="result" aria-live="polite">
+        <div class="res-row">
+          <div>
+            <div class="label" style="margin-bottom:8px">Chance destroyed if fire arrives</div>
+            <div class="big" id="r-p">–</div>
+          </div>
+          <div class="res-meta">
+            <span id="r-range"></span>
+            <span>Expected damage ratio <b id="r-edr"></b></span>
+          </div>
+        </div>
+        <div>
+          <div class="bandbar" id="r-bands" role="img" aria-label="Probability of each DINS damage category"></div>
+          <div class="legend" style="margin-top:8px">
+            <span><i style="background:var(--d4)"></i>Destroyed &gt;50%</span>
+            <span><i style="background:var(--d3)"></i>Major 25–50%</span>
+            <span><i style="background:var(--d2)"></i>Minor 10–25%</span>
+            <span><i style="background:var(--d1)"></i>Affected 1–10%</span>
+            <span><i style="background:var(--d0)"></i>No damage</span>
+          </div>
+        </div>
+        <p class="foot-note" id="r-note"></p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="survey">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">Why most wildfire scores are wrong in the same way</p>
+      <h2>A post-fire survey records what is left, not what was there.</h2>
+    </div>
+    <div class="cols">
+      <div class="prose">
+        <p>After a fire, CAL FIRE inspectors walk every street inside the perimeter and record each structure: damage category, roof, eaves, vents, siding, decks and fences. It is the best open record of wildfire losses anywhere. It is also recorded after the fact.</p>
+        <p>A wooden fence attached to a house that burned is gone, so the form says <b>no fence</b>. Stucco walls stand in the ash, so the form says <b>stucco</b>. Eaves on a burnt house cannot be seen, so the form says <b>unknown</b>. A model trained on these records learns how the survey was filled in.</p>
+        <p class="quote">A model fitted naively to the survey concludes that an attached wooden fence lowers the chance of losing the house by <span data-k="fence_or"></span>.</p>
+        <p>We checked every feature three ways and only give credit where the answers agree. We also stopped the model from reading the word "unknown". A gradient-boosted model that is allowed to use it scores an AUC of <b data-k="auc_leaky"></b> on withheld fires. Once "unknown" cannot be told apart from a real value, the same model scores <b data-k="auc_survey"></b>. Restricted to features that are recorded the same way before and after a fire, it scores <b data-k="auc_graded"></b>, level with ours.</p>
+      </div>
+      <div class="fig">
+        <div class="fig-title">What the form says on homes that burned and homes that survived</div>
+        <div class="pdx" id="pdx"></div>
+        <p class="fig-cap">Share of inspected homes with each recorded value, <span data-k="y0"></span>–<span data-k="y1"></span>. The fence and deck rows are the evidence-survival effect: a combustible attachment that burned is recorded as absent. "Unknown" eaves are three times as common on destroyed homes.</p>
+        <div class="fig-title" style="margin-top:26px">How well each model ranks homes within a fire it has never seen</div>
+        <div id="leakchart"></div>
+        <p class="fig-cap">Area under the ROC curve within each withheld fire, mean over <span data-k="n_folds"></span> fires. Hatched bars use survey fields whose recorded value depends on the outcome; they score well against the survey and cannot be used to price a house before a fire.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="credits" class="alt">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">Mitigation credits, graded by evidence</p>
+      <h2>Which retrofits the inspection record can support</h2>
+      <p class="prose">Each estimate compares homes in the same fire that faced the same local fire, measured as the share of neighbours destroyed within 100 m, and differ in one feature. Intervals are 90% bootstrap ranges, resampling whole fires. A credit is <b>supported</b> when the full survey and the complete records agree, the standing homes do not contradict it, and the direction matches fire-lab testing.</p>
+    </div>
+    <div class="ctrl">
+      <label for="p0">Baseline chance of loss <input type="range" id="p0" min="5" max="90" step="5" value="30"> <span class="mono" id="p0v">30%</span></label>
+      <span class="foot-note" style="max-width:52ch">Credits shrink as the fire gets more severe. At a 30% baseline, a 20% credit takes the chance of loss to 24%; at 90%, the same feature does much less.</span>
+    </div>
+    <div class="cols wide-left">
+      <div class="fig">
+        <div class="scroll-x"><div id="forest" style="min-width:560px"></div></div>
+        <div class="legend">
+          <span><span class="chip supported">supported</span> credit or surcharge we file</span>
+          <span><span class="chip contested">contested</span> designs disagree, no credit</span>
+          <span><span class="chip consumed">consumed</span> burns with the house, not identifiable</span>
+        </div>
+      </div>
+      <div class="detail" id="cdetail" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">From vulnerability to premium</p>
+      <h2>Retrofit planner</h2>
+      <p class="prose">WildfireVuln prices the house. The chance that fire reaches it each year comes from your hazard model. Annual expected loss is that chance times the expected damage ratio times the dwelling limit. The planner uses the home on the inspection card above.</p>
+    </div>
+    <div class="cols">
+      <div class="plan">
+        <div class="inp"><label class="label" for="covA">Dwelling limit (Coverage A, $)</label><input type="number" id="covA" value="850000" min="0" step="10000"></div>
+        <div class="inp"><label class="label" for="preach">Annual chance fire reaches the home (%)</label><input type="number" id="preach" value="0.6" min="0" max="100" step="0.1"></div>
+        <div>
+          <div class="label" style="margin-bottom:4px">Retrofits</div>
+          <div id="retro"></div>
+        </div>
+      </div>
+      <div class="plan">
+        <div class="ledger">
+          <div><span class="label">Expected loss now</span><b id="aal0">–</b><span class="foot-note">per year</span></div>
+          <div><span class="label">After retrofits</span><b id="aal1">–</b><span class="foot-note">per year</span></div>
+          <div><span class="label">Indicated credit</span><b class="good" id="cred">–</b><span class="foot-note" id="credsub"></span></div>
+        </div>
+        <div class="fig">
+          <div class="fig-title">Chance destroyed across fire severities</div>
+          <div id="sevchart"></div>
+          <p class="fig-cap">The same home before and after retrofits, from a mild fire (10th percentile of the <span data-k="n_fires"></span> fires) to a severe one (90th). Fire-to-fire variation is larger than any retrofit, which is why the credit is a relative change and the hazard model carries the severity.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="live" class="alt">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">During the event</p>
+      <h2>Replay a fire the model never saw</h2>
+      <p class="prose">Before a fire, nobody knows how severe it will be, so the first estimate is wide. As inspection teams report, WildfireVuln updates its estimate of the fire's severity and narrows the range. Each replay below uses a model trained without that fire, and feeds it inspections in the order they were entered.</p>
+    </div>
+    <div class="ctrl">
+      <label for="fire">Fire <select id="fire"></select></label>
+    </div>
+    <div class="live-grid">
+      <div class="fig">
+        <div id="livechart"></div>
+        <div class="playrow">
+          <button class="tbtn" id="play" type="button">Play</button>
+          <input type="range" id="kslider" min="0" max="10" step="1" value="0" aria-label="Number of inspections received">
+        </div>
+        <div class="readout" id="readout"></div>
+      </div>
+      <div class="fig">
+        <div id="map" role="img" aria-label="Map of destroyed share by 250 metre cell"></div>
+        <div class="legend" id="maplegend"></div>
+        <p class="fig-cap">Destroyed share of inspected homes in 250 m cells. Cells with fewer than 5 homes are left out, so no single house can be located. Basemap © Esri and OpenStreetMap contributors.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="evidence">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">Validation</p>
+      <h2>Tested one withheld fire at a time</h2>
+      <p class="prose">Each of <span data-k="n_folds"></span> fires was removed in turn, the models were trained on the other fires, and the removed fire was scored. Fires qualify with at least 200 homes and at least 20 destroyed and 20 not destroyed. Lower is better for Brier score, log loss and fire-share error; higher is better for AUC.</p>
+    </div>
+    <div class="scroll-x"><table class="tbl" id="btable"></table></div>
+    <div class="cols even" style="margin-top:56px">
+      <div class="fig">
+        <div class="fig-title">Destroyed share of each withheld fire, predicted before it started</div>
+        <div id="intchart"></div>
+        <p class="fig-cap">Bars are WildfireVuln's 80% range for the destroyed share of each fire, made without any information about that fire. Dots mark what happened. <span data-k="cov_txt"></span></p>
+      </div>
+      <div class="fig">
+        <div class="fig-title">Accuracy as inspections arrive</div>
+        <div class="scroll-x"><table class="tbl" id="ltable"></table></div>
+        <p class="fig-cap">Brier score on the homes not yet inspected, mean over withheld fires. Boosting gets the same early inspections and has its average re-centred on them. WildfireVuln's update is Bayesian: with few inspections it leans on what it knows about fires in general, so it does not over-react.</p>
+        <div class="prose" style="margin-top:20px">
+          <p><b>Where we win.</b> Against every model that can be used for pricing, WildfireVuln has the lowest fire-share error and log loss, the best update once inspections arrive, and the only calibrated range for a fire's total. It ranks homes as well as gradient boosting on the same features.</p>
+          <p><b>Where we do not.</b> Gradient boosting on the same features has a slightly lower Brier score before the fire. Models that read the outcome-dependent survey fields rank homes better against the survey; we explain above why that is not usable.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="portfolio" class="alt">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">Score a book of homes</p>
+      <h2>Portfolio desk</h2>
+      <p class="prose">Paste or upload a CSV and every row is scored in your browser; nothing is sent anywhere. Homes in one fire share its severity, so the range for the number destroyed is wider than independent scoring suggests. The rows loaded below are examples.</p>
+    </div>
+    <div class="cols">
+      <div class="plan">
+        <label class="label" for="csv">Columns: id, struct, year_built, roof, eaves, vents, n30, n100, nn_m</label>
+        <textarea id="csv" spellcheck="false"></textarea>
+        <div class="playrow">
+          <button class="btn" id="score" type="button">Score homes</button>
+          <label class="btn line" for="file" style="cursor:pointer">Upload CSV</label>
+          <input type="file" id="file" accept=".csv,text/csv" hidden>
+          <a class="btn line" id="dl" href="#" hidden>Download results</a>
+        </div>
+        <p class="err" id="csverr" hidden></p>
+        <p class="foot-note">Codes: struct sfr_1, sfr_2, mobile, motorhome, multi · roof asphalt, tile, metal, wood · eaves open, enclosed, none · vents coarse, fine, open, none · anything else or blank is unknown. n30 and n100 are structures within 30 m and 100 m; nn_m is metres to the nearest structure. Blank spacing uses the suburban median.</p>
+      </div>
+      <div class="plan">
+        <div class="ledger">
+          <div><span class="label">Homes scored</span><b id="pf-n">–</b></div>
+          <div><span class="label">Expected destroyed</span><b id="pf-e">–</b><span class="foot-note">if one fire reaches all of them</span></div>
+          <div><span class="label">80% range</span><b id="pf-r">–</b><span class="foot-note">fire severity shared</span></div>
+        </div>
+        <div class="scroll-x"><table class="tbl" id="pftable"></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <div class="sh">
+      <p class="kicker">Method and limits</p>
+      <h2>What the model is, and what it is not</h2>
+    </div>
+    <div class="lim">
+      <div><b>Data</b><p>CAL FIRE Damage Inspection (DINS) records, <span data-k="n_raw"></span> structures pulled from the public feature service. Kept: residential structures from fires starting <span data-k="y0"></span> or later with an assessed damage category, <span data-k="n_homes"></span> homes in all. Earlier fires use a coarser form and mostly record damaged homes only. Street addresses are dropped at download.</p></div>
+      <div><b>Model</b><p>Logistic regression for P(destroyed) with structure type, year built, roof, eaves and vents in their graded form, spacing to neighbouring structures, and a partially pooled effect for each fire (spread τ = <span data-k="tau"></span> on the logit scale). For a new fire the prediction is averaged over that effect. Unknown fields take the average contribution of the known values, so "unknown" never carries information.</p></div>
+      <div><b>Damage ratio</b><p>Destroyed counts as a total loss. Homes that survive are assigned the observed mix of DINS categories for their structure type, at 5%, 17.5% and 37.5% for affected, minor and major. Smoke, ash and contents losses are not in the inspection record and are not modelled.</p></div>
+      <div><b>What it conditions on</b><p>Every inspected home was inside or near a fire perimeter. The model answers "if fire reaches this neighbourhood", and needs a hazard model for the chance that it does.</p></div>
+      <div><b>Credits are associations</b><p>Comparing neighbours in the same fire removes most differences in exposure, but not all. Homes built after 2008 also differ in ways the form does not record. Credits for fences, decks and patio covers cannot be estimated from post-fire surveys at all; they need inspections made before the fire.</p></div>
+      <div><b>Geography</b><p>California only. Other states and countries have different building stock, codes and fire behaviour, and no comparable open inspection record.</p></div>
+      <div><b>Not compared</b><p>Commercial catastrophe models are licensed and were not available to test. Every comparison here is against a model built and scored on the same data, and the code is public.</p></div>
+    </div>
+
+    <div class="sh" style="margin-top:72px">
+      <p class="kicker">Pilot</p>
+      <h2>Bring the inspections you made before the fire</h2>
+      <p class="prose">Most carriers already hold underwriting inspections or application answers for homes that later burned. Joined to DINS outcomes, they record the house as it stood, which is exactly what the post-fire survey cannot, and they make the fence, deck and siding credits estimable.</p>
+    </div>
+    <ol class="steps" style="padding:0; margin:0">
+      <li><b>Send a pre-fire extract</b><p>Location, construction and mitigation fields for policies in the footprint of any fire since 2018. Coordinates can be rounded to 50 m.</p></li>
+      <li><b>We join it to DINS outcomes</b><p>Each policy is matched to its inspected structure and neighbourhood. The same withheld-fire test runs on your fields.</p></li>
+      <li><b>You get a graded schedule</b><p>Credits for your own features with the same three-way check, ready for a Safer from Wildfires rate filing.</p></li>
+    </ol>
+    <p style="margin-top:28px"><a class="btn" href="https://github.com/__REPO__/issues/new?title=Pilot%20enquiry">Start a pilot enquiry</a></p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>WildfireVuln. Built <span data-k="built"></span> from the code at <a href="https://github.com/__REPO__">github.com/__REPO__</a>. Every number on this page is produced by a script in that repository.</p>
+    <p>Source data: CAL FIRE Damage Inspection (DINS) program, public feature service POSTFIRE_MASTER_DATA_SHARE. This is an independent analysis and is not affiliated with or endorsed by CAL FIRE.</p>
+  </div>
+</footer>
+
+<div class="tip" id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const B = /*__BUNDLE__*/null;
+const M = B.model, D = M.design;
+const $ = s => document.querySelector(s);
+const pct = (x, d=0) => (x*100).toFixed(d) + '%';
+const fmt$ = x => '$' + Math.round(x).toLocaleString('en-US');
+const sig = z => 1/(1+Math.exp(-z));
+const Z80 = 1.2815516;
+const TAU = Math.sqrt(M.tau2);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k, attrs[k]); if(parent) parent.appendChild(e); return e; }
+
+/* ---------- engine: mirrors wildfirevuln/model.py ---------- */
+function numTerms(h){
+  const a=Math.log1p(h.n30), b=Math.log1p(h.n100), c=Math.log(h.nn_m+1);
+  return {log_n30:a, log_n100:b, log_nn:c, log_n30_sq:a*a, log_n100_sq:b*b, log_nn_sq:c*c,
+          isolated: h.n30===0?1:0, n30_x_n100:a*b};
+}
+function graded(h){
+  const o={...h};
+  for(const f in B.spec){ const ok=new Set([...B.spec[f], D.ref[f], 'unknown']); if(!ok.has(o[f])) o[f]=D.ref[f]; }
+  return o;
+}
+function eta(h0){
+  const h=graded(h0); let e=M.mu, j=0;
+  for(const c of D.cats){ for(const v of D.levels[c]){ const x = h[c]==='unknown' ? D.freq[c][v] : (h[c]===v?1:0); e += x*M.beta[j++]; } }
+  const t=numTerms(h);
+  for(const k of D.num){ e += ((t[k]-D.mean[k])/D.sd[k])*M.beta[j++]; }
+  return e;
+}
+function pInt(e, um=0, v=M.tau2){
+  if(v<=0) return sig(e+um);
+  const s=Math.sqrt(2*v); let p=0;
+  for(let i=0;i<B.gh.x.length;i++) p += B.gh.w[i]*sig(e+um+s*B.gh.x[i]);
+  return p/Math.sqrt(Math.PI);
+}
+function partialEDR(struct){ return (B.partial[struct]||B.partial.sfr_1).edr; }
+function edr(p, struct){ return p + (1-p)*partialEDR(struct); }
+
+/* ---------- static numbers ---------- */
+const summ = Object.fromEntries(B.bench.summary.map(r=>[r.model, r]));
+const cr = B.credits.rows;
+const nSup = cr.filter(r=>r.grade==='supported').length;
+const nCov = Math.round(B.bench.coverage80*B.bench.n_folds);
+const fenceRow = cr.find(r=>r.level==='fence=none');
+const K = {
+  n_homes: B.meta.n_homes.toLocaleString('en-US'), n_fires: B.meta.n_fires, y0: B.meta.years[0], y1: B.meta.years[1],
+  n_folds: B.bench.n_folds, cov: nCov + ' of ' + B.bench.n_folds, n_supported: nSup, n_levels: cr.length,
+  auc_leaky: summ.gbm_leaky.auc.toFixed(2), auc_survey: summ.gbm_survey.auc.toFixed(2), auc_graded: summ.gbm_graded.auc.toFixed(2),
+  fence_or: Math.round((1-1/fenceRow.odds_ratio)*100) + '% in odds compared with having no fence',
+  cov_txt: nCov + ' of ' + B.bench.n_folds + ' fires fell inside the range, against 80% expected.',
+  n_raw: B.meta.n_raw.toLocaleString('en-US'), tau: TAU.toFixed(2), built: B.meta.built,
+};
+document.querySelectorAll('[data-k]').forEach(n=>{ const v=K[n.dataset.k]; if(v!==undefined) n.textContent=v; });
+
+/* ---------- tooltip ---------- */
+const tip=$('#tip');
+function showTip(ev, html){ tip.innerHTML=html; tip.hidden=false; const x=Math.min(ev.clientX+14, innerWidth-tip.offsetWidth-8); const y=Math.min(ev.clientY+14, innerHeight-tip.offsetHeight-8); tip.style.left=x+'px'; tip.style.top=y+'px'; }
+function hideTip(){ tip.hidden=true; }
+
+/* ---------- inspection card ---------- */
+const gradeOf = Object.fromEntries(cr.map(r=>[r.level, r.grade]));
+const FIELDS = [
+  {k:'struct', label:'Structure type', opts:['sfr_1','sfr_2','mobile','motorhome','multi']},
+  {k:'era', label:'Year built (parcel roll)', opts:['pre1990','1990_2007','post2008','unknown']},
+  {k:'roof', label:'Roof construction', opts:['asphalt','tile','metal','wood','unknown']},
+  {k:'eaves', label:'Eaves', opts:['open','enclosed','none','unknown']},
+  {k:'vents', label:'Vent screen', opts:['coarse','fine','open','none','unknown']},
+  {k:'spacing', label:'Neighbouring structures', opts:['Scattered','Suburban','Dense']},
+];
+const fireOpts = [{id:'new', label:'A new fire, severity unknown'},{id:'mild', label:'A mild fire (10th percentile)'},{id:'severe', label:'A severe fire (90th percentile)'}]
+  .concat(B.replay_effects.map(r=>({id:'ev:'+r.event, label:'Replay: '+r.event, u:r.u})));
+const state = {struct:'sfr_1', era:'pre1990', roof:'asphalt', eaves:'open', vents:'coarse', spacing:'Suburban', fire:'new'};
+function optName(k, v){ if(v==='unknown') return 'Unknown'; if(k==='spacing'){ const p=B.presets.find(x=>x.name===v); return v; } return (B.names[k]||{})[v] || v; }
+function isPriced(k, v){ if(k==='spacing'||v==='unknown') return true; if(v===D.ref[k]) return true; return (B.spec[k]||[]).includes(v); }
+function buildForm(){
+  const f=$('#form'); f.innerHTML='';
+  for(const fd of FIELDS){
+    const w=document.createElement('div'); w.className='fld';
+    const top=document.createElement('div'); top.className='fld-top';
+    top.innerHTML=`<span class="label" id="lab-${fd.k}">${fd.label}</span><span class="note" id="note-${fd.k}"></span>`;
+    const seg=document.createElement('div'); seg.className='seg'; seg.setAttribute('role','group'); seg.setAttribute('aria-labelledby','lab-'+fd.k);
+    for(const v of fd.opts){
+      const b=document.createElement('button'); b.type='button'; b.id=`opt-${fd.k}-${v}`; b.textContent=optName(fd.k,v);
+      if(!isPriced(fd.k,v)) b.classList.add('flag');
+      b.setAttribute('aria-pressed', state[fd.k]===v);
+      b.onclick=()=>{ state[fd.k]=v; seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b)); updateAll(); };
+      seg.appendChild(b);
+    }
+    w.append(top, seg); f.appendChild(w);
+  }
+  const w=document.createElement('div'); w.className='fld';
+  w.innerHTML='<div class="fld-top"><label class="label" for="firesel">Fire scenario</label></div>';
+  const s=document.createElement('select'); s.id='firesel';
+  for(const o of fireOpts){ const op=document.createElement('option'); op.value=o.id; op.textContent=o.label; s.appendChild(op); }
+  s.onchange=()=>{ state.fire=s.value; updateAll(); };
+  w.appendChild(s); f.appendChild(w);
+}
+function homeFrom(st){
+  const p=B.presets.find(x=>x.name===st.spacing);
+  return {struct:st.struct, era:st.era, roof:st.roof, eaves:st.eaves, vents:st.vents, n30:p.n30, n100:p.n100, nn_m:p.nn_m};
+}
+function scenario(fire){
+  if(fire==='new') return {um:0, v:M.tau2};
+  if(fire==='mild') return {um:-Z80*TAU, v:0};
+  if(fire==='severe') return {um:Z80*TAU, v:0};
+  const o=fireOpts.find(x=>x.id===fire); return {um:o.u, v:0};
+}
+function updateCard(){
+  const h=homeFrom(state), e=eta(h), sc=scenario(state.fire);
+  const p=pInt(e, sc.um, sc.v);
+  $('#r-p').innerHTML = (p*100).toFixed(0)+'<small>%</small>';
+  if(state.fire==='new') $('#r-range').innerHTML = `Mild to severe fire <b>${pct(sig(e-Z80*TAU))} – ${pct(sig(e+Z80*TAU))}</b>`;
+  else $('#r-range').innerHTML = `Fire scenario fixed, range shown for a new fire: <b>${pct(sig(e-Z80*TAU))} – ${pct(sig(e+Z80*TAU))}</b>`;
+  $('#r-edr').textContent = pct(edr(p, h.struct),1);
+  const bands=(B.partial[h.struct]||B.partial.sfr_1).bands;
+  const parts=[[p,'--d4','Destroyed'],[(1-p)*bands[3],'--d3','Major'],[(1-p)*bands[2],'--d2','Minor'],[(1-p)*bands[1],'--d1','Affected'],[(1-p)*bands[0],'--d0','No damage']];
+  $('#r-bands').innerHTML = parts.map(([v,c,n])=>`<i style="flex:${Math.max(v,0.0001)};background:var(${c})" title="${n} ${pct(v,1)}"></i>`).join('');
+  const notes=[];
+  for(const fd of FIELDS){
+    const n=$('#note-'+fd.k); const v=state[fd.k];
+    n.className='note';
+    if(fd.k==='spacing'){ const pr=B.presets.find(x=>x.name===v); n.textContent=`${pr.n100} within 100 m · nearest ${Math.round(pr.nn_m)} m`; continue; }
+    if(!isPriced(fd.k,v)){ const g=gradeOf[fd.k+'='+v]; n.textContent=`priced as ${optName(fd.k,D.ref[fd.k]).toLowerCase()}: evidence ${g}`; n.className='note warn'; }
+    else if(v!=='unknown' && v!==D.ref[fd.k]){ const r=cr.find(x=>x.level===fd.k+'='+v); if(r){ const c=-r.credit_p30; n.textContent=(c<0?'credit ':'surcharge +')+Math.abs(c*100).toFixed(0)+'% at 30% baseline'; } }
+    else n.textContent='';
+  }
+  $('#r-note').textContent = 'Options marked * are recorded by inspectors but the evidence does not support a separate price, so they are priced as the reference option. ' + (state.fire.startsWith('ev:') ? 'Replay uses the severity fitted for that fire.' : '');
+}
+
+/* ---------- survey paradox ---------- */
+function buildParadox(){
+  const P=B.paradox, rows=[
+    ['fence','none','Attached fence: none'],['fence','combustible','Attached fence: combustible'],
+    ['deck','none','Elevated deck: none'],['eaves','unknown','Eaves: unknown']];
+  const box=$('#pdx'); box.innerHTML='';
+  const mx=Math.max(...rows.map(([f,l])=>Math.max(...P[f][l])));
+  for(const [f,l,name] of rows){
+    const [s,d]=P[f][l];
+    const r=document.createElement('div'); r.className='pdx-row';
+    r.innerHTML=`<div style="font-size:15px">${name}</div><div class="pdx-bars">
+      <div class="pbar"><i style="width:${s/mx*75}%;background:var(--d0)"></i>${pct(s)} of survivors</div>
+      <div class="pbar"><i style="width:${d/mx*75}%;background:var(--d4);outline:1px solid var(--ink-3)"></i>${pct(d)} of destroyed</div></div>`;
+    box.appendChild(r);
+  }
+}
+
+/* ---------- leak chart ---------- */
+function hbar(container, rows, opts){
+  const W=560, rowH=30, padL=230, padR=56, H=rows.length*rowH+30;
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`, width:'100%', role:'img', 'aria-label':opts.aria});
+  const defs=el('defs',{},svg); const pat=el('pattern',{id:'hatch'+opts.id, width:6, height:6, patternUnits:'userSpaceOnUse', patternTransform:'rotate(45)'},defs);
+  el('rect',{width:6,height:6,fill:css('--panel-2')},pat); el('line',{x1:0,y1:0,x2:0,y2:6,stroke:css('--muted-mark'),'stroke-width':2.2},pat);
+  const x=v=>padL+(v-opts.min)/(opts.max-opts.min)*(W-padL-padR);
+  for(const t of opts.ticks){ el('line',{x1:x(t),x2:x(t),y1:0,y2:H-22,stroke:css('--rule'),'stroke-width':1},svg); const tx=el('text',{x:x(t),y:H-6,'text-anchor':'middle','font-size':11},svg); tx.textContent=t.toFixed(2); }
+  rows.forEach((r,i)=>{
+    const y=i*rowH+6;
+    const lab=el('text',{x:padL-10,y:y+15,'text-anchor':'end','font-size':12.5},svg); lab.textContent=r.label; if(r.ours) lab.setAttribute('style','fill:'+css('--ink')+';font-weight:500');
+    const bar=el('rect',{x:x(opts.min),y:y+2,width:Math.max(x(r.v)-x(opts.min),1),height:rowH-12,rx:1,fill:r.leak?`url(#hatch${opts.id})`:(r.ours?css('--accent'):css('--muted-mark'))},svg);
+    const vt=el('text',{x:x(r.v)+6,y:y+15,'font-size':12},svg); vt.textContent=r.v.toFixed(3);
+    bar.addEventListener('mousemove',ev=>showTip(ev,`<b>${r.label}</b><br>${r.note}`)); bar.addEventListener('mouseleave',hideTip);
+  });
+  container.innerHTML=''; container.appendChild(svg);
+}
+const NICE = {
+  wildfirevuln:'WildfireVuln', gbm_graded:'Boosting, graded features', checklist:'Equal-weight checklist',
+  struct_only:'Structure type only', constant:'Constant rate', survey_glm:'Logistic, all survey fields',
+  gbm_survey:'Boosting, all survey fields', gbm_leaky:'Boosting, reads "unknown"'};
+const NOTE = {
+  wildfirevuln:'Graded features, spacing and a partially pooled fire effect.',
+  gbm_graded:'Gradient boosting on exactly the features WildfireVuln uses.',
+  checklist:'Share of eight surveyed features in the compliant state, through a fitted logistic link. Close to how a flat discount schedule works.',
+  struct_only:'Structure type only, like a construction and occupancy table.',
+  constant:'The pooled destroyed share of the training fires.',
+  survey_glm:'Every survey field including fence, deck and siding, whose recorded value depends on the outcome.',
+  gbm_survey:'Every survey field; unknown values replaced with random draws so they cannot be detected.',
+  gbm_leaky:'Unknown values left detectable. Destroyed homes have far more unknowns, so the model learns the outcome from the form.'};
+function buildLeak(){
+  const order=['gbm_leaky','gbm_survey','survey_glm','wildfirevuln','gbm_graded','checklist','struct_only','constant'];
+  hbar($('#leakchart'), order.map(m=>({label:NICE[m], v:summ[m].auc, leak:['gbm_leaky','gbm_survey','survey_glm'].includes(m), ours:m==='wildfirevuln', note:NOTE[m]+'<br>AUC '+summ[m].auc.toFixed(3)})),
+    {min:0.5, max:0.9, ticks:[0.5,0.6,0.7,0.8,0.9], id:'a', aria:'AUC by model'});
+}
+
+/* ---------- credits forest ---------- */
+const FORDER=['struct','era','roof','eaves','vents','siding','windows','deck','patio','fence'];
+let selLevel='vents=fine';
+function creditAt(beta,p0){ const o=p0/(1-p0)*Math.exp(beta); return (o/(1+o))/p0 - 1; }
+function buildForest(){
+  const p0=+$('#p0').value/100; $('#p0v').textContent=Math.round(p0*100)+'%';
+  const rows=[...cr].sort((a,b)=>FORDER.indexOf(a.field)-FORDER.indexOf(b.field));
+  const W=640, rowH=25, padL=230, padR=20, top=26;
+  let y=top; const items=[]; let last=null;
+  for(const r of rows){ if(r.field!==last){ items.push({head:r.field_name, ref:r.reference, y}); y+=rowH; last=r.field; } items.push({r, y}); y+=rowH; }
+  const H=y+30, lo=-0.8, hi=1.2;
+  const x=v=>padL+(Math.max(lo,Math.min(hi,v))-lo)/(hi-lo)*(W-padL-padR);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`, width:'100%', role:'img','aria-label':'Change in chance of loss by feature, with 90% intervals'});
+  for(const t of [-0.8,-0.6,-0.4,-0.2,0,0.4,0.8,1.2]){ el('line',{x1:x(t),x2:x(t),y1:top-6,y2:H-24,stroke:t===0?css('--ink-2'):css('--rule'),'stroke-width':t===0?1.2:1},svg); const tx=el('text',{x:x(t),y:H-8,'text-anchor':'middle','font-size':11},svg); tx.textContent=(t>0?'+':'')+Math.round(t*100)+'%'; }
+  const hd=el('text',{x:x(-0.4),y:12,'text-anchor':'middle','font-size':11},svg); hd.textContent='lowers chance of loss';
+  const hd2=el('text',{x:x(0.6),y:12,'text-anchor':'middle','font-size':11},svg); hd2.textContent='raises chance of loss';
+  for(const it of items){
+    if(it.head){ const t=el('text',{x:0,y:it.y+16,'font-size':12.5},svg); t.setAttribute('style',`fill:${css('--ink')};font-family:var(--f-disp);font-weight:600;font-size:15px`); t.textContent=it.head; const rt=el('tspan',{dx:8},t); rt.setAttribute('style',`font-family:var(--f-mono);font-weight:400;font-size:11px;fill:${css('--ink-3')}`); rt.textContent='vs '+it.ref.toLowerCase(); continue; }
+    const r=it.r, cy=it.y+rowH/2;
+    const g=el('g',{tabindex:0, role:'button','aria-label':`${r.field_name}: ${r.value_name}, ${r.grade}`, style:'cursor:pointer'},svg);
+    if(r.level===selLevel) el('rect',{x:0,y:it.y+1,width:W,height:rowH-2,fill:css('--accent-wash')},g);
+    el('rect',{x:0,y:it.y,width:W,height:rowH,fill:'transparent'},g);
+    const t=el('text',{x:14,y:cy+4,'font-size':12.5},g); t.textContent=r.value_name;
+    const c=creditAt(r.beta_full,p0), a=creditAt(r.lo90,p0), b=creditAt(r.hi90,p0);
+    const col = r.grade==='supported' ? (c<0?css('--protect'):css('--accent')) : (r.grade==='consumed'?css('--accent-ink'):css('--muted-mark'));
+    el('line',{x1:x(a),x2:x(b),y1:cy,y2:cy,stroke:col,'stroke-width':2,'stroke-linecap':'round', opacity:r.grade==='supported'?1:.65},g);
+    if(r.grade==='supported') el('circle',{cx:x(c),cy,r:5,fill:col,stroke:css('--panel'),'stroke-width':2},g);
+    else el('rect',{x:x(c)-4.5,y:cy-4.5,width:9,height:9,fill:css('--sunk'),stroke:col,'stroke-width':1.6,transform:r.grade==='consumed'?`rotate(45 ${x(c)} ${cy})`:''},g);
+    if(b>hi){ const ar=el('text',{x:W-padR+2,y:cy+4,'font-size':12},g); ar.textContent='›'; }
+    const pick=()=>{ selLevel=r.level; buildForest(); };
+    g.addEventListener('click',pick); g.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); pick(); }});
+    g.addEventListener('mousemove',ev=>showTip(ev,`<b>${r.field_name}: ${r.value_name}</b><br>${(c>0?'+':'')+(c*100).toFixed(0)}% (90%: ${(a*100).toFixed(0)} to ${(b*100).toFixed(0)}%)<br>${r.grade}`)); g.addEventListener('mouseleave',hideTip);
+  }
+  $('#forest').innerHTML=''; $('#forest').appendChild(svg);
+  buildDetail(p0);
+}
+const WHY = {
+  supported:'The full survey and the complete records agree on the direction and both exclude zero, the standing-home comparison does not contradict it, and the direction matches fire-lab testing where such testing exists.',
+  contested:'At least one check fails: the interval includes zero, the designs disagree, or the direction contradicts fire-lab testing. We show the estimate but do not price it.',
+  consumed:'This attachment burns with the house and is then recorded as absent, so the survey cannot tell its effect apart from the outcome. It needs inspections made before the fire.'};
+function buildDetail(p0){
+  const r=cr.find(x=>x.level===selLevel); if(!r) return;
+  const c=creditAt(r.beta_full,p0);
+  const f=v=>v==null?'n/a':(v>0?'+':'')+v.toFixed(2);
+  $('#cdetail').innerHTML=`<span class="label">${r.field_name}</span><h4>${r.value_name}</h4>
+    <div><span class="chip ${r.grade}">${r.grade}</span></div>
+    <p style="font-size:15px;color:var(--ink-2)">${WHY[r.grade]}</p>
+    <dl class="dl">
+      <dt>Compared with</dt><dd>${r.reference}</dd>
+      <dt>Change in chance of loss</dt><dd>${(c>0?'+':'')+(c*100).toFixed(1)}% at ${Math.round(p0*100)}% baseline</dd>
+      <dt>Odds ratio, 90% range</dt><dd>${r.odds_ratio.toFixed(2)} (${Math.exp(r.lo90).toFixed(2)}–${Math.exp(r.hi90).toFixed(2)})</dd>
+      <dt>Full survey, log-odds</dt><dd>${f(r.beta_full)}</dd>
+      <dt>Complete records</dt><dd>${f(r.beta_complete)} ± ${r.se_complete?r.se_complete.toFixed(2):'n/a'}</dd>
+      <dt>Standing homes, any damage</dt><dd>${f(r.beta_standing)} ± ${r.se_standing?r.se_standing.toFixed(2):'n/a'}</dd>
+      <dt>Lab expectation</dt><dd>${r.prior_sign<0?'protective':r.prior_sign>0?'harmful':'none'}</dd>
+      <dt>Homes with this value</dt><dd>${r.n_level.toLocaleString('en-US')}</dd>
+    </dl>
+    <p class="foot-note">Select any row in the chart to see its checks.</p>`;
+}
+
+/* ---------- retrofit planner ---------- */
+const RETRO=[
+  {id:'eaves', label:'Enclose the eaves', apply:h=>({...h, eaves:'enclosed'}), ok:h=>h.eaves==='open'||h.eaves==='unknown'},
+  {id:'vents', label:'Fit 1/8-inch ember mesh to all vents', apply:h=>({...h, vents:'fine'}), ok:h=>['coarse','open','unknown'].includes(h.vents)},
+  {id:'roof', label:'Replace wood-shake roof with Class A asphalt', apply:h=>({...h, roof:'asphalt'}), ok:h=>h.roof==='wood'},
+];
+const NOTCRED=[
+  ['Remove an attached wooden fence','consumed: burns with the house'],
+  ['Replace a wooden deck','consumed: burns with the house'],
+  ['Install multi-pane windows','contested: standing homes contradict'],
+  ['Re-side in stucco or fibre cement','contested: estimate contradicts lab testing'],
+  ['Replace the roof with metal or tile','contested: interval includes no effect'],
+];
+const retroOn={eaves:true, vents:true, roof:true};
+function buildRetro(){
+  const h=homeFrom(state), box=$('#retro'); box.innerHTML='';
+  for(const r of RETRO){
+    const ok=r.ok(h); const w=document.createElement('label'); w.className='chk'+(ok?'':' off');
+    w.innerHTML=`<input type="checkbox" id="rt-${r.id}" ${ok&&retroOn[r.id]?'checked':''} ${ok?'':'disabled'}><span>${r.label}<small>${ok?'':'Not applicable to the home on the card'}</small></span>`;
+    w.querySelector('input').onchange=e=>{ retroOn[r.id]=e.target.checked; updatePlanner(); };
+    box.appendChild(w);
+  }
+  for(const [l,why] of NOTCRED){ const w=document.createElement('div'); w.className='chk off'; w.innerHTML=`<input type="checkbox" disabled aria-label="${l}"><span>${l}<small>No credit: ${why}</small></span>`; box.appendChild(w); }
+}
+function retrofitted(h){ let o={...h}; for(const r of RETRO){ if(r.ok(h) && retroOn[r.id]) o=r.apply(o); } return o; }
+function updatePlanner(){
+  const h=homeFrom(state), h1=retrofitted(h);
+  const cov=Math.max(0,+$('#covA').value||0), pr=Math.max(0,Math.min(100,+$('#preach').value||0))/100;
+  const e0=eta(h), e1=eta(h1);
+  const d0=edr(pInt(e0),h.struct), d1=edr(pInt(e1),h1.struct);
+  $('#aal0').textContent=fmt$(pr*cov*d0); $('#aal1').textContent=fmt$(pr*cov*d1);
+  const c=1-d1/d0; $('#cred').textContent=(c*100).toFixed(1)+'%'; $('#credsub').textContent=fmt$(pr*cov*(d0-d1))+' a year';
+  drawSev(e0,e1);
+}
+function drawSev(e0,e1){
+  const W=560,H=210,pl=44,pr=16,pt=14,pb=34;
+  const us=[]; for(let z=-1.6;z<=1.6001;z+=0.05) us.push(z);
+  const x=z=>pl+(z+1.6)/3.2*(W-pl-pr), y=p=>pt+(1-p)*(H-pt-pb);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',role:'img','aria-label':'Chance destroyed by fire severity, before and after retrofits'});
+  for(const t of [0,.25,.5,.75,1]){ el('line',{x1:pl,x2:W-pr,y1:y(t),y2:y(t),stroke:css('--rule')},svg); const tx=el('text',{x:pl-6,y:y(t)+4,'text-anchor':'end','font-size':11},svg); tx.textContent=pct(t); }
+  [[-Z80,'mild (P10)'],[0,'typical'],[Z80,'severe (P90)']].forEach(([z,l])=>{ const tx=el('text',{x:x(z),y:H-10,'text-anchor':'middle','font-size':11},svg); tx.textContent=l; el('line',{x1:x(z),x2:x(z),y1:H-pb,y2:H-pb+4,stroke:css('--ink-3')},svg); });
+  const path=e=>us.map((z,i)=>(i?'L':'M')+x(z).toFixed(1)+' '+y(sig(e+z*TAU)).toFixed(1)).join(' ');
+  el('path',{d:path(e0),fill:'none',stroke:css('--muted-mark'),'stroke-width':2},svg);
+  el('path',{d:path(e1),fill:'none',stroke:css('--protect'),'stroke-width':2.4},svg);
+  const l0=el('text',{x:x(1.6)-4,y:y(sig(e0+1.6*TAU))-8,'text-anchor':'end','font-size':11.5},svg); l0.textContent='as inspected';
+  const l1=el('text',{x:x(1.6)-4,y:y(sig(e1+1.6*TAU))+16,'text-anchor':'end','font-size':11.5},svg); l1.textContent='after retrofits'; l1.setAttribute('style','fill:'+css('--protect'));
+  const hit=el('rect',{x:pl,y:pt,width:W-pl-pr,height:H-pt-pb,fill:'transparent'},svg);
+  const cross=el('line',{y1:pt,y2:H-pb,stroke:css('--ink-3'),'stroke-dasharray':'3 3',visibility:'hidden'},svg);
+  hit.addEventListener('mousemove',ev=>{ const bb=svg.getBoundingClientRect(); const z=((ev.clientX-bb.left)/bb.width*W-pl)/(W-pl-pr)*3.2-1.6; const zc=Math.max(-1.6,Math.min(1.6,z)); cross.setAttribute('x1',x(zc)); cross.setAttribute('x2',x(zc)); cross.setAttribute('visibility','visible'); showTip(ev,`Fire severity z = ${zc.toFixed(2)}<br>As inspected ${pct(sig(e0+zc*TAU),1)}<br>After retrofits ${pct(sig(e1+zc*TAU),1)}`); });
+  hit.addEventListener('mouseleave',()=>{ cross.setAttribute('visibility','hidden'); hideTip(); });
+  $('#sevchart').innerHTML=''; $('#sevchart').appendChild(svg);
+}
+
+/* ---------- live fire ---------- */
+let curFire=0, playing=null, map=null, layer=null;
+function buildLive(){
+  const s=$('#fire'); s.innerHTML='';
+  B.replays.forEach((r,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${r.event} · ${r.n.toLocaleString('en-US')} homes`; s.appendChild(o); });
+  s.onchange=()=>{ curFire=+s.value; stopPlay(); $('#kslider').value=0; drawLive(); drawMap(); };
+  $('#kslider').oninput=()=>{ stopPlay(); drawLive(); };
+  $('#play').onclick=()=>{ if(playing){ stopPlay(); return; } const sl=$('#kslider'); if(+sl.value>=+sl.max) sl.value=0; $('#play').textContent='Pause';
+    playing=setInterval(()=>{ if(+sl.value>=+sl.max){ stopPlay(); return; } sl.value=+sl.value+1; drawLive(); }, 650); };
+}
+function stopPlay(){ if(playing){ clearInterval(playing); playing=null; } $('#play').textContent='Play'; }
+function drawLive(){
+  const r=B.replays[curFire], st=r.steps, sl=$('#kslider'); sl.max=st.length-1;
+  const idx=+sl.value, kmax=st[st.length-1][0];
+  const W=640,H=300,pl=46,pr=18,pt=16,pb=40;
+  const x=k=>pl+Math.sqrt(k/kmax)*(W-pl-pr), y=p=>pt+(1-p)*(H-pt-pb);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',role:'img','aria-label':'Estimated destroyed share as inspections arrive'});
+  for(const t of [0,.25,.5,.75,1]){ el('line',{x1:pl,x2:W-pr,y1:y(t),y2:y(t),stroke:css('--rule')},svg); const tx=el('text',{x:pl-6,y:y(t)+4,'text-anchor':'end','font-size':11},svg); tx.textContent=pct(t); }
+  for(const k of [0,10,25,50,100,200,300,500].filter(k=>k<=kmax)){ const tx=el('text',{x:x(k),y:H-pb+16,'text-anchor':'middle','font-size':11},svg); tx.textContent=k; }
+  const xl=el('text',{x:(pl+W-pr)/2,y:H-6,'text-anchor':'middle','font-size':11},svg); xl.textContent='inspections received (square-root scale)';
+  const band=st.map((s,i)=>(i?'L':'M')+x(s[0])+' '+y(s[3])).join(' ')+' '+[...st].reverse().map(s=>'L'+x(s[0])+' '+y(s[2])).join(' ')+'Z';
+  el('path',{d:band,fill:css('--accent-wash'),stroke:'none'},svg);
+  el('line',{x1:pl,x2:W-pr,y1:y(r.truth),y2:y(r.truth),stroke:css('--ink'),'stroke-dasharray':'5 4','stroke-width':1.4},svg);
+  const tl=el('text',{x:W-pr-2,y:y(r.truth)+(r.truth>0.5?16:-8),'text-anchor':'end','font-size':11.5},svg); tl.textContent='final destroyed share '+pct(r.truth); tl.setAttribute('style','fill:'+css('--ink'));
+  el('path',{d:st.map((s,i)=>(i?'L':'M')+x(s[0])+' '+y(s[4])).join(' '),fill:'none',stroke:css('--gbm'),'stroke-width':2,'stroke-dasharray':'2 3'},svg);
+  el('path',{d:st.map((s,i)=>(i?'L':'M')+x(s[0])+' '+y(s[1])).join(' '),fill:'none',stroke:css('--accent'),'stroke-width':2.4},svg);
+  const cur=st[idx];
+  el('line',{x1:x(cur[0]),x2:x(cur[0]),y1:pt,y2:H-pb,stroke:css('--ink-3'),'stroke-width':1},svg);
+  el('circle',{cx:x(cur[0]),cy:y(cur[1]),r:5.5,fill:css('--accent'),stroke:css('--panel'),'stroke-width':2},svg);
+  el('circle',{cx:x(cur[0]),cy:y(cur[4]),r:4.5,fill:css('--gbm'),stroke:css('--panel'),'stroke-width':2},svg);
+  const lg=el('g',{transform:`translate(${pl+8},${pt+4})`},svg);
+  [['WildfireVuln, with 80% range',css('--accent'),''],['Boosting, re-centred',css('--gbm'),'2 3']].forEach(([t,c,da],i)=>{ el('line',{x1:0,x2:20,y1:i*16+6,y2:i*16+6,stroke:c,'stroke-width':2.4,'stroke-dasharray':da},lg); const tx=el('text',{x:26,y:i*16+10,'font-size':11.5},lg); tx.textContent=t; });
+  $('#livechart').innerHTML=''; $('#livechart').appendChild(svg);
+  const obs = cur[5]==null ? 'none yet' : pct(cur[5])+' destroyed among them';
+  $('#readout').innerHTML = `<span>After <b>${cur[0]}</b> inspections (${obs})</span>
+    <span>WildfireVuln estimate <b>${pct(cur[1])}</b>, 80% range <b>${pct(cur[2])} – ${pct(cur[3])}</b></span>
+    <span>Boosting, re-centred <b>${pct(cur[4])}</b> · final share <b>${pct(r.truth)}</b></span>`;
+}
+function drawMap(){
+  if(!window.L){ $('#map').innerHTML='<p class="foot-note" style="padding:14px">The map library did not load.</p>'; return; }
+  const c=B.cells[curFire];
+  if(!map){ map=L.map('map',{scrollWheelZoom:false, attributionControl:true}); }
+  const dark = document.documentElement.dataset.theme==='dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  if(map._tiles) map.removeLayer(map._tiles);
+  map._tiles=L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${dark?'World_Dark_Gray_Base':'World_Light_Gray_Base'}/MapServer/tile/{z}/{y}/{x}`,{attribution:'Esri, HERE, Garmin, © OpenStreetMap contributors', maxZoom:16}).addTo(map);
+  if(layer) map.removeLayer(layer);
+  const ramp=['--s1','--s2','--s3','--s4','--s5'].map(css);
+  const colorOf=s=>ramp[Math.min(4,Math.floor(s*5))];
+  layer=L.layerGroup(); const half=c.cell_m/2, bounds=[];
+  for(const [lon,lat,n,b] of c.cells){
+    const dLat=half/110540, dLon=half/(111320*Math.cos(lat*Math.PI/180));
+    const bb=[[lat-dLat,lon-dLon],[lat+dLat,lon+dLon]]; bounds.push(bb[0],bb[1]);
+    L.rectangle(bb,{stroke:false, fillColor:colorOf(b/n), fillOpacity:.82}).bindTooltip(`${n} homes · ${pct(b/n)} destroyed`).addTo(layer);
+  }
+  layer.addTo(map); map.fitBounds(bounds,{padding:[10,10]});
+  $('#maplegend').innerHTML=['0–20%','20–40%','40–60%','60–80%','80–100%'].map((t,i)=>`<span><i style="background:${ramp[i]}"></i>${t}</span>`).join('')+'<span>destroyed</span>';
+}
+
+/* ---------- validation tables ---------- */
+function buildBench(){
+  const groups=[['Usable for pricing: features recorded the same way before and after a fire',['wildfirevuln','gbm_graded','checklist','struct_only','constant']],
+                ['Reads outcome-dependent survey fields: scores well against the survey, cannot price a house',['survey_glm','gbm_survey','gbm_leaky']]];
+  const cols=[['brier','Brier',4,'min'],['logloss','Log loss',4,'min'],['auc','AUC within fire',3,'max'],['share_err','Fire-share error',3,'min']];
+  const pricing=groups[0][1], won={}; const byFire={};
+  for(const r of B.bench.per_fire){ if(!pricing.includes(r.model)) continue; (byFire[r.event]=byFire[r.event]||[]).push(r); }
+  for(const ev in byFire){ const w=byFire[ev].reduce((a,b)=>b.brier<a.brier?b:a); won[w.model]=(won[w.model]||0)+1; }
+  const best={}; for(const [k,,,dir] of cols){ const v=groups[0][1].map(m=>summ[m][k]); best[k]=dir==='min'?Math.min(...v):Math.max(...v); }
+  let h='<thead><tr><th>Vulnerability model</th>'+cols.map(c=>`<th class="n">${c[1]}</th>`).join('')+'<th class="n">Fires won*</th></tr></thead><tbody>';
+  groups.forEach(([g,ms],gi)=>{ h+=`<tr class="grp"><td colspan="6">${g}</td></tr>`;
+    for(const m of ms){ const s=summ[m]; h+=`<tr class="${m==='wildfirevuln'?'ours':''} ${gi?'leak':''}"><td>${NICE[m]}<br><span class="foot-note">${NOTE[m]}</span></td>`+
+      cols.map(([k,,d])=>{ const v=s[k].toFixed(d); return `<td class="n">${gi===0&&Math.abs(s[k]-best[k])<1e-12?'<b>'+v+'</b>':v}</td>`; }).join('')+`<td class="n">${gi?'–':(won[m]||0)}</td></tr>`; } });
+  $('#btable').innerHTML=h+'</tbody><caption class="foot-note" style="caption-side:bottom;text-align:left;padding-top:10px">* Withheld fires on which the model had the lowest Brier score among the models usable for pricing.</caption>';
+  const L=B.bench.live, get=(k,m)=>L.find(r=>r.k===k&&r.model===m);
+  let t='<thead><tr><th class="n">Inspected</th><th class="n">WildfireVuln</th><th class="n">Boosting</th><th class="n">No update</th></tr></thead><tbody>';
+  for(const k of [10,25,50,100,200]){ const a=get(k,'wildfirevuln_live'), b=get(k,'gbm_graded_recentred'), c=get(k,'wildfirevuln_prior'); if(!a) continue;
+    t+=`<tr><td class="n">${k}</td><td class="n">${a.brier<b.brier?'<b>'+a.brier.toFixed(4)+'</b>':a.brier.toFixed(4)}</td><td class="n">${b.brier<a.brier?'<b>'+b.brier.toFixed(4)+'</b>':b.brier.toFixed(4)}</td><td class="n">${c.brier.toFixed(4)}</td></tr>`; }
+  $('#ltable').innerHTML=t+'</tbody>';
+}
+function buildIntervals(){
+  const rows=[...B.bench.intervals].sort((a,b)=>a.rate-b.rate);
+  const W=560,rowH=17,pl=170,pr=14,pt=8,H=rows.length*rowH+pt+30;
+  const x=v=>pl+v*(W-pl-pr);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',role:'img','aria-label':'Predicted 80% range and observed destroyed share for each withheld fire'});
+  for(const t of [0,.25,.5,.75,1]){ el('line',{x1:x(t),x2:x(t),y1:pt,y2:H-24,stroke:css('--rule')},svg); const tx=el('text',{x:x(t),y:H-8,'text-anchor':'middle','font-size':11},svg); tx.textContent=pct(t); }
+  rows.forEach((r,i)=>{ const cy=pt+i*rowH+rowH/2, inside=r.rate>=r.lo80&&r.rate<=r.hi80;
+    const g=el('g',{},svg);
+    const t=el('text',{x:pl-8,y:cy+4,'text-anchor':'end','font-size':11},g); t.textContent=r.event.replace(' Lightning Cmplx',' Complex');
+    el('rect',{x:x(r.lo80),y:cy-4,width:Math.max(x(r.hi80)-x(r.lo80),2),height:8,rx:2,fill:css('--accent-wash'),stroke:css('--accent'),'stroke-width':1},g);
+    el('circle',{cx:x(r.rate),cy,r:4.2,fill:inside?css('--ink'):css('--accent'),stroke:css('--ground'),'stroke-width':1.5},g);
+    el('rect',{x:0,y:cy-rowH/2,width:W,height:rowH,fill:'transparent'},g);
+    g.addEventListener('mousemove',ev=>showTip(ev,`<b>${r.event}</b> · ${r.n.toLocaleString('en-US')} homes<br>80% range ${pct(r.lo80)} – ${pct(r.hi80)}<br>Observed ${pct(r.rate,1)} ${inside?'(inside)':'(outside)'}`)); g.addEventListener('mouseleave',hideTip);
+  });
+  $('#intchart').innerHTML=''; $('#intchart').appendChild(svg);
+}
+
+/* ---------- portfolio ---------- */
+const SAMPLE=`id,struct,year_built,roof,eaves,vents,n30,n100,nn_m
+EX-001,sfr_1,1964,asphalt,open,coarse,1,14,22
+EX-002,sfr_2,2012,tile,enclosed,fine,2,30,15
+EX-003,mobile,1988,metal,none,unknown,4,40,8
+EX-004,sfr_1,1979,wood,open,open,0,3,48
+EX-005,sfr_1,1995,asphalt,enclosed,fine,1,9,30
+EX-006,multi,2001,tile,enclosed,none,3,36,12
+EX-007,sfr_2,1958,asphalt,unknown,coarse,2,22,18
+EX-008,sfr_1,2016,asphalt,enclosed,fine,0,6,40
+EX-009,motorhome,,metal,none,none,1,8,20
+EX-010,sfr_1,1972,asphalt,open,coarse,3,41,10
+EX-011,sfr_2,1990,tile,open,fine,1,18,21
+EX-012,sfr_1,1949,wood,unknown,unknown,0,2,70`;
+const VALID={struct:['sfr_1','sfr_2','mobile','motorhome','multi'],roof:['asphalt','tile','metal','wood'],eaves:['open','enclosed','none'],vents:['coarse','fine','open','none']};
+function eraOf(y){ const v=parseInt(y,10); if(!v||v<1800) return 'unknown'; return v<1990?'pre1990':v<2008?'1990_2007':'post2008'; }
+let lastCsv='';
+function scorePortfolio(){
+  const err=$('#csverr'); err.hidden=true;
+  const lines=$('#csv').value.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2){ err.textContent='Add a header row and at least one home.'; err.hidden=false; return; }
+  const hdr=lines[0].split(',').map(s=>s.trim().toLowerCase());
+  const need=['struct','roof','eaves','vents']; const miss=need.filter(n=>!hdr.includes(n));
+  if(miss.length){ err.textContent='Missing column: '+miss.join(', ')+'. The header must include struct, roof, eaves and vents.'; err.hidden=false; return; }
+  const sub=B.presets.find(p=>p.name==='Suburban');
+  const out=[]; let sumP=0, etas=[];
+  for(const line of lines.slice(1)){
+    const c=line.split(','), row={}; hdr.forEach((h,i)=>row[h]=(c[i]||'').trim());
+    const num=(v,d)=>{ const x=parseFloat(v); return isFinite(x)&&x>=0?x:d; };
+    const h={struct:VALID.struct.includes(row.struct)?row.struct:'sfr_1', era:eraOf(row.year_built),
+      roof:VALID.roof.includes(row.roof)?row.roof:'unknown', eaves:VALID.eaves.includes(row.eaves)?row.eaves:'unknown', vents:VALID.vents.includes(row.vents)?row.vents:'unknown',
+      n30:num(row.n30,sub.n30), n100:num(row.n100,sub.n100), nn_m:num(row.nn_m,sub.nn_m)};
+    const e=eta(h), p=pInt(e); etas.push(e); sumP+=p;
+    const best=RETRO.filter(r=>r.ok(h)).map(r=>({l:r.label, c:1-edr(pInt(eta(r.apply(h))),h.struct)/edr(p,h.struct)})).sort((a,b)=>b.c-a.c)[0];
+    out.push({id:row.id||'', p, lo:sig(e-Z80*TAU), hi:sig(e+Z80*TAU), d:edr(p,h.struct), best});
+  }
+  const lo=etas.reduce((s,e)=>s+sig(e-Z80*TAU),0), hi=etas.reduce((s,e)=>s+sig(e+Z80*TAU),0);
+  $('#pf-n').textContent=out.length; $('#pf-e').textContent=sumP.toFixed(1); $('#pf-r').textContent=lo.toFixed(1)+' – '+hi.toFixed(1);
+  let t='<thead><tr><th>ID</th><th class="n">Chance destroyed</th><th class="n">Mild – severe</th><th class="n">Damage ratio</th><th>Largest credit available</th></tr></thead><tbody>';
+  for(const r of out) t+=`<tr><td class="mono" style="font-size:13px">${r.id}</td><td class="n">${pct(r.p)}</td><td class="n">${pct(r.lo)} – ${pct(r.hi)}</td><td class="n">${pct(r.d,1)}</td><td style="font-size:14px">${r.best?r.best.l+' <span class="mono" style="color:var(--protect)">−'+(r.best.c*100).toFixed(0)+'%</span>':'<span style="color:var(--ink-3)">none applicable</span>'}</td></tr>`;
+  $('#pftable').innerHTML=t+'</tbody>';
+  lastCsv='id,p_destroyed,p_mild,p_severe,expected_damage_ratio,largest_credit,credit_pct\n'+out.map(r=>[r.id,r.p.toFixed(4),r.lo.toFixed(4),r.hi.toFixed(4),r.d.toFixed(4),r.best?'"'+r.best.l+'"':'',r.best?(r.best.c*100).toFixed(1):''].join(',')).join('\n');
+  const dl=$('#dl'); dl.hidden=false; dl.href=URL.createObjectURL(new Blob([lastCsv],{type:'text/csv'})); dl.download='wildfirevuln_scores.csv';
+}
+
+/* ---------- theme ---------- */
+function setTheme(t){ if(t) document.documentElement.dataset.theme=t; else delete document.documentElement.dataset.theme; try{ t?localStorage.setItem('wfv-theme',t):localStorage.removeItem('wfv-theme'); }catch(e){} redraw(); }
+function isDark(){ const t=document.documentElement.dataset.theme; return t? t==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+$('#theme').onclick=()=>setTheme(isDark()?'light':'dark');
+try{ const t=localStorage.getItem('wfv-theme'); if(t) document.documentElement.dataset.theme=t; }catch(e){}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>redraw());
+
+function updateAll(){ updateCard(); buildRetro(); updatePlanner(); }
+function redraw(){ $('#theme').textContent=isDark()?'Light':'Dark'; buildParadox(); buildLeak(); buildForest(); updatePlanner(); drawLive(); buildIntervals(); drawMap(); }
+
+buildForm(); buildLive(); buildBench();
+$('#p0').oninput=buildForest;
+$('#covA').oninput=updatePlanner; $('#preach').oninput=updatePlanner;
+$('#csv').value=SAMPLE; $('#score').onclick=scorePortfolio;
+$('#file').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ $('#csv').value=rd.result; scorePortfolio(); }; rd.readAsText(f); };
+updateAll(); redraw(); scorePortfolio();
+</script>
+</body>
+</html>

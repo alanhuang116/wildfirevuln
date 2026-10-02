@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+# House-level records (coordinates per structure) stay local.
+data/raw/
+data/processed/*.csv

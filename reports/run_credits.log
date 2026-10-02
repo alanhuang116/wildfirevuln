@@ -1,0 +1,23 @@
+full 78,091  standing 40,218  complete 41,138
+           level  beta_full   lo90   hi90  beta_complete  beta_standing     grade  credit_p30
+   struct=mobile      0.849  0.676  1.014          0.811         -0.166 supported      -0.668
+struct=motorhome      2.164  1.402  2.547          1.066          0.161 supported      -1.629
+    struct=multi     -0.031 -0.371  0.194         -0.022          0.386 contested       0.022
+    struct=sfr_2     -0.263 -0.350 -0.179         -0.229          0.011 supported       0.174
+   era=1990_2007     -0.190 -0.293  0.085         -0.144          0.123 contested       0.128
+    era=post2008     -0.717 -0.913 -0.465         -0.689         -0.119 supported       0.423
+      roof=metal     -0.168 -0.374  0.197          0.074         -0.271 contested       0.113
+       roof=tile     -0.261 -0.440  0.039         -0.109         -0.102 contested       0.172
+       roof=wood      0.417  0.099  0.911          0.579          0.339 supported      -0.313
+  eaves=enclosed     -0.357 -0.487 -0.198         -0.426          0.003 supported       0.231
+      eaves=none      0.530  0.359  0.740          0.294          0.065 contested      -0.405
+      vents=fine     -0.302 -0.488 -0.221         -0.389         -0.142 supported       0.198
+      vents=none     -1.035 -1.188 -0.840         -1.010         -0.043 supported       0.560
+      vents=open     -0.301 -0.979  0.659         -0.430         -0.271 contested       0.198
+  siding=noncomb      0.375  0.150  0.761          0.556          0.322 contested      -0.280
+   windows=multi     -0.473 -0.741 -0.382         -0.626          0.282 contested       0.297
+       deck=none      0.281  0.158  0.467          0.497         -0.110  consumed      -0.207
+   patio=noncomb     -0.551 -0.769 -0.345         -0.577          0.093  consumed       0.340
+      patio=none     -0.033 -0.109  0.071         -0.013          0.103  consumed       0.023
+   fence=noncomb      0.673  0.485  0.800          0.548         -0.085  consumed      -0.522
+      fence=none      0.939  0.731  1.109          0.727         -0.251  consumed      -0.743
